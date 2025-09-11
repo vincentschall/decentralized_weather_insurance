@@ -40,7 +40,7 @@ contract MockUSDC {
     
     function approve(address spender, uint256 amount) external returns (bool) {
 
-        allowance[msg.sender][spender] += amount;
+        allowance[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
         return true;
     }
