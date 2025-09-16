@@ -15,3 +15,5 @@ Group project (09/2025): EVM-based smart contract with react app for the blockch
   - End with: `npx hardhat clean`.
   - To run react app: go to client folder (`cd client` from project root).
   - Run `npm start`. The website should be at `localhost:3000`.
+
+![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white&style=for-the-badge)
