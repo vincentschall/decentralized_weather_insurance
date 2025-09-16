@@ -17,3 +17,6 @@ Group project (09/2025): EVM-based smart contract with react app for the blockch
   - Run `npm start`. The website should be at `localhost:3000`.
 
 ![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white&style=for-the-badge)
+![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
+![Smart Contracts](https://img.shields.io/badge/Smart%20Contracts-Secure-blue?logo=lock&logoColor=white)
+![Weather Data](https://img.shields.io/badge/Weather-API-blue?logo=cloud&logoColor=white)
