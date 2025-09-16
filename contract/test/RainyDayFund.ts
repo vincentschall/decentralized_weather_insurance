@@ -1,22 +1,23 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { RainyDayFund, MockUSDC } from "../typechain-types";
+import { RainyDayFund, MockUSDC, MockWeatherOracle, SeasonPolicyToken } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("RainyDayFund", function () {
   let rainyDayFund: RainyDayFund;
   let mockUSDC: MockUSDC;
+  let mockWeatherOracle: MockWeatherOracle;
   let owner: SignerWithAddress;
   let farmer: SignerWithAddress;
   let investor: SignerWithAddress;
   let addrs: SignerWithAddress[];
 
-  // Constants
   const USDC_DECIMALS = 6;
   const INITIAL_USDC_BALANCE = ethers.parseUnits("10000", USDC_DECIMALS); // 10,000 USDC
-  const PREMIUM = ethers.parseUnits("200", USDC_DECIMALS); // 200 USDC
-  const PAYOUT = ethers.parseUnits("400", USDC_DECIMALS); // 400 USDC (2x premium)
+  const PREMIUM = ethers.parseUnits("9", USDC_DECIMALS);
+  const PAYOUT = PREMIUM * 2n;
+  const INITIAL_WEATHER = 5; // 1-9 leads to payout, 10 or more is no payout
 
   beforeEach(async function () {
     // Get signers
@@ -25,12 +26,16 @@ describe("RainyDayFund", function () {
     // Deploy mock USDC token
     const MockUSDCFactory = await ethers.getContractFactory("MockUSDC");
     mockUSDC = await MockUSDCFactory.deploy();
+    
+    // Deploy mock weather oracle
+    const MockWeatherOracleFactory = await ethers.getContractFactory("MockWeatherOracle");
+    mockWeatherOracle = await MockWeatherOracleFactory.deploy(INITIAL_WEATHER);
 
     // Deploy RainyDayFund contract
     const RainyDayFundFactory = await ethers.getContractFactory("RainyDayFund");
-    rainyDayFund = await RainyDayFundFactory.deploy(await mockUSDC.getAddress());
+    rainyDayFund = await RainyDayFundFactory.deploy(await mockUSDC.getAddress(), await mockWeatherOracle.getAddress());
 
-    // Mint USDC to test accounts using the mint function
+    // Mint USDC to test accounts
     await mockUSDC.mint(farmer.address, INITIAL_USDC_BALANCE);
     await mockUSDC.mint(investor.address, INITIAL_USDC_BALANCE);
 
@@ -59,334 +64,378 @@ describe("RainyDayFund", function () {
     });
 
     it("Should set correct initial season parameters", async function () {
-      const policyInfo = await rainyDayFund.getPolicyInfo(1);
+      const policyInfo = await rainyDayFund.seasonPolicies(1);
       expect(policyInfo.premium).to.equal(PREMIUM);
       expect(policyInfo.payoutAmount).to.equal(PAYOUT);
-      expect(policyInfo.seasonActive).to.be.true;
+      expect(policyInfo.totalPoliciesSold).to.equal(0);
+    });
+
+    it("Should initialize in ACTIVE state", async function () {
+      expect(await rainyDayFund.getSeasonState()).to.equal(0); // ACTIVE
     });
   });
 
   describe("Policy Purchase", function () {
     it("Should allow buying policies", async function () {
       const amount = 2;
-      const totalPremium = PREMIUM * BigInt(amount);
+      const contractPremium = PREMIUM;
+      const totalPremium = contractPremium * BigInt(amount);
 
       await expect(rainyDayFund.connect(farmer).buyPolicy(amount))
         .to.emit(rainyDayFund, "PolicyBought")
         .withArgs(farmer.address, 1, amount, totalPremium);
 
-      // Check ERC1155 balance
-      expect(await rainyDayFund.balanceOf(farmer.address, 1)).to.equal(amount);
+      // Check policy token balance
+      const policyInfo = await rainyDayFund.seasonPolicies(1);
+      const policyToken = await ethers.getContractAt("SeasonPolicyToken", policyInfo.policyToken);
+      expect(await policyToken.balanceOf(farmer.address)).to.equal(amount);
 
-      // Check risk pool balance
-      expect(await rainyDayFund.riskPoolBalance()).to.equal(totalPremium);
+      // Check total policies sold
+      const updatedPolicyInfo = await rainyDayFund.seasonPolicies(1);
+      expect(updatedPolicyInfo.totalPoliciesSold).to.equal(amount);
     });
 
     it("Should reject zero amount purchase", async function () {
       await expect(rainyDayFund.connect(farmer).buyPolicy(0))
-        .to.be.revertedWith("Amount must be > 0");
+        .to.be.revertedWith("Amount > 0");
     });
 
-    it("Should reject purchase when policy sales ended", async function () {
-      // Fast forward to near end of season (policy sales end 30 days before season ends)
+    it("Should reject purchase when not in active period", async function () {
+      // Fast forward to claim period
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd - 29n * 24n * 60n * 60n); // 29 days before season end
+      await time.increaseTo(seasonEnd + 1n);
+
+      expect(await rainyDayFund.getSeasonState()).to.equal(1); // CLAIM state
 
       await expect(rainyDayFund.connect(farmer).buyPolicy(1))
-        .to.be.revertedWith("Policy sales ended");
+        .to.be.revertedWith("Not in active period");
     });
 
     it("Should transfer correct USDC amount", async function () {
       const initialBalance = await mockUSDC.balanceOf(farmer.address);
       const amount = 1;
+      const contractPremium = PREMIUM;
       
       await rainyDayFund.connect(farmer).buyPolicy(amount);
       
       const finalBalance = await mockUSDC.balanceOf(farmer.address);
-      expect(initialBalance - finalBalance).to.equal(PREMIUM);
+      expect(initialBalance - finalBalance).to.equal(contractPremium);
     });
   });
 
   describe("Weather Data and Claims", function () {
+
     beforeEach(async function () {
-      // Farmer buys policies
+      // First invest to ensure contract has enough funds for payouts
+      const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
+      await rainyDayFund.connect(investor).invest(investmentAmount);
+
+      // Then farmer buys policies
       await rainyDayFund.connect(farmer).buyPolicy(3);
     });
 
-    it("Should allow owner to update weather data", async function () {
-      const weatherData = 5; // Below threshold of 10
-
-      await expect(rainyDayFund.updateWeatherData(1, weatherData))
-        .to.emit(rainyDayFund, "WeatherDataUpdated")
-        .withArgs(1, weatherData);
-
-      const policyInfo = await rainyDayFund.getPolicyInfo(1);
-      expect(policyInfo.weatherData).to.equal(weatherData);
-      expect(policyInfo.weatherDataFetched).to.be.true;
-      expect(policyInfo.payoutEnabled).to.be.true;
+    it("Should read weather data from oracle", async function () {
+      const [roundId, weather, timestamp] = await rainyDayFund.getWeatherData();
+      expect(weather).to.equal(INITIAL_WEATHER);
+      expect(roundId).to.be.greaterThan(0);
+      expect(timestamp).to.be.greaterThan(0);
     });
 
     it("Should allow claiming when conditions are met", async function () {
-      // Set weather data that triggers payout (< 10)
-      await rainyDayFund.updateWeatherData(1, 5);
-
-      // Fast forward past season end
+      // Fast forward to claim period
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
       await time.increaseTo(seasonEnd + 1n);
 
-      const initialBalance = await mockUSDC.balanceOf(farmer.address);
-      const expectedPayout = PAYOUT * 3n; // 3 policies
+      expect(await rainyDayFund.getSeasonState()).to.equal(1); // CLAIM state
 
-      await expect(rainyDayFund.connect(farmer).claimAll())
-        .to.emit(rainyDayFund, "ClaimMade")
-        .withArgs(farmer.address, 1, 3, expectedPayout);
+      const initialBalance = await mockUSDC.balanceOf(farmer.address);
+      const contractPayout = PAYOUT;
+      const expectedPayout = contractPayout * 3n; // 3 policies
+
+      await expect(rainyDayFund.connect(farmer).claimPolicies())
+      .to.emit(rainyDayFund, "ClaimMade")
+      .withArgs(farmer.address, 1, 3, expectedPayout);
 
       const finalBalance = await mockUSDC.balanceOf(farmer.address);
       expect(finalBalance - initialBalance).to.equal(expectedPayout);
 
       // Tokens should be burned
-      //expect(await rainyDayFund.balanceOf(farmer.address, 1)).to.equal(0);
+      const policyInfo = await rainyDayFund.seasonPolicies(1);
+      const policyToken = await ethers.getContractAt("SeasonPolicyToken", policyInfo.policyToken);
+      expect(await policyToken.balanceOf(farmer.address)).to.equal(0);
     });
 
     it("Should not allow claiming with good weather", async function () {
-      // Set weather data that doesn't trigger payout (>= 10)
-      await rainyDayFund.updateWeatherData(1, 15);
+      // Update mock oracle to return good weather (>= 10)
+      await mockWeatherOracle.updatePrice(15);
 
-      // Fast forward past season end
+      // Fast forward to claim period
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
       await time.increaseTo(seasonEnd + 1n);
 
-      await expect(rainyDayFund.connect(farmer).claimAll())
-        .to.be.revertedWith("No eligible claims");
+      await expect(rainyDayFund.connect(farmer).claimPolicies())
+      .to.be.revertedWith("Weather not bad enough");
     });
 
-    it("Should not allow claiming before season ends", async function () {
-      await rainyDayFund.updateWeatherData(1, 5);
+    it("Should not allow claiming in wrong period", async function () {
+      // Try claiming in ACTIVE period
+      await expect(rainyDayFund.connect(farmer).claimPolicies())
+      .to.be.revertedWith("Not in claim period");
 
-      await expect(rainyDayFund.connect(farmer).claimAll())
-        .to.be.revertedWith("No eligible claims");
-    });
-
-    it("Should not allow claiming after claim window expires", async function () {
-      await rainyDayFund.updateWeatherData(1, 5);
-
-      // Fast forward past claim window (seasonEnd + 30 days + 1)
+      // Fast forward to WITHDRAW period
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 31n * 24n * 60n * 60n);
+      await time.increaseTo(seasonEnd + 61n); // 1 minute + 1 second for WITHDRAW period
 
-      await expect(rainyDayFund.connect(farmer).claimAll())
-        .to.be.revertedWith("No eligible claims");
+      expect(await rainyDayFund.getSeasonState()).to.equal(2); // WITHDRAW state
+
+      await expect(rainyDayFund.connect(farmer).claimPolicies())
+      .to.be.revertedWith("Not in claim period");
+    });
+
+    it("Should not allow claiming without policies", async function () {
+      // Fast forward to claim period
+      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
+      await time.increaseTo(seasonEnd + 1n);
+
+      await expect(rainyDayFund.connect(investor).claimPolicies())
+      .to.be.revertedWith("No policies to claim");
     });
   });
 
-  describe("Investment Functions", function () {
-    it("Should allow investments", async function () {
+  describe("Investment Functions (ERC4626)", function () {
+    it("Should allow investments using deposit", async function () {
+      const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
+
+      const shares = await rainyDayFund.connect(investor).deposit.staticCall(investmentAmount, investor.address);
+
+      await expect(rainyDayFund.connect(investor).deposit(investmentAmount, investor.address))
+      .to.emit(rainyDayFund, "Deposit")
+      .withArgs(investor.address, investor.address, investmentAmount, shares);
+
+      expect(await rainyDayFund.balanceOf(investor.address)).to.equal(shares);
+      expect(await rainyDayFund.totalAssets()).to.equal(investmentAmount);
+    });
+
+    it("Should allow investments using invest wrapper", async function () {
       const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
 
       await expect(rainyDayFund.connect(investor).invest(investmentAmount))
-        .to.emit(rainyDayFund, "InvestmentMade")
-        .withArgs(investor.address, investmentAmount);
+      .to.emit(rainyDayFund, "InvestmentMade")
+      .withArgs(investor.address, investmentAmount);
 
-      expect(await rainyDayFund.investorShares(investor.address)).to.equal(investmentAmount);
-      expect(await rainyDayFund.totalInvestorFunds()).to.equal(investmentAmount);
-      expect(await rainyDayFund.riskPoolBalance()).to.equal(investmentAmount);
+      expect(await rainyDayFund.balanceOf(investor.address)).to.be.greaterThan(0);
+      expect(await rainyDayFund.totalAssets()).to.equal(investmentAmount);
     });
 
-    it("Should allow withdrawal during withdrawal period", async function () {
+    it("Should allow withdrawal during withdrawal period using redeemShares", async function () {
       const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
-      
+
       // Make investment
       await rainyDayFund.connect(investor).invest(investmentAmount);
+      const shares = await rainyDayFund.balanceOf(investor.address);
 
-      // Fast forward to withdrawal period (seasonEnd + 2*30 days)
+      // Fast forward to withdrawal period
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 61n * 24n * 60n * 60n);
+      await time.increaseTo(seasonEnd + 61n); // WITHDRAW period
+
+      expect(await rainyDayFund.getSeasonState()).to.equal(2); // WITHDRAW state
 
       const initialBalance = await mockUSDC.balanceOf(investor.address);
 
-      await expect(rainyDayFund.connect(investor).withdraw())
-        .to.emit(rainyDayFund, "InvestmentWithdrawn");
+      await expect(rainyDayFund.connect(investor).redeemShares(shares))
+      .to.emit(rainyDayFund, "InvestmentWithdrawn")
+      .withArgs(investor.address, investmentAmount);
 
       const finalBalance = await mockUSDC.balanceOf(investor.address);
       expect(finalBalance - initialBalance).to.equal(investmentAmount);
-      expect(await rainyDayFund.investorShares(investor.address)).to.equal(0);
+      expect(await rainyDayFund.balanceOf(investor.address)).to.equal(0);
     });
 
     it("Should not allow withdrawal outside withdrawal period", async function () {
       const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
       await rainyDayFund.connect(investor).invest(investmentAmount);
+      const shares = await rainyDayFund.balanceOf(investor.address);
 
-      await expect(rainyDayFund.connect(investor).withdraw())
-        .to.be.revertedWith("Withdrawal period not active");
+      // Try in ACTIVE period
+      await expect(rainyDayFund.connect(investor).redeemShares(shares))
+      .to.be.revertedWith("Not in withdrawal period");
+
+      // Try in CLAIM period
+      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
+      await time.increaseTo(seasonEnd + 1n);
+
+      await expect(rainyDayFund.connect(investor).redeemShares(shares))
+      .to.be.revertedWith("Not in withdrawal period");
     });
 
     it("Should calculate proportional withdrawal with profits/losses", async function () {
       const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
-      
+
       // Two investors invest
       await rainyDayFund.connect(investor).invest(investmentAmount);
       await mockUSDC.mint(addrs[0].address, INITIAL_USDC_BALANCE);
       await mockUSDC.connect(addrs[0]).approve(await rainyDayFund.getAddress(), ethers.MaxUint256);
       await rainyDayFund.connect(addrs[0]).invest(investmentAmount);
 
-      // Farmer buys policy, adding to risk pool
-      await rainyDayFund.connect(farmer).buyPolicy(1); // Adds 200 USDC
+      const investorShares = await rainyDayFund.balanceOf(investor.address);
+
+      // Farmer buys policy, adding to asset pool
+      await rainyDayFund.connect(farmer).buyPolicy(1); // Adds 9 USDC
 
       // Fast forward to withdrawal period
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 61n * 24n * 60n * 60n);
+      await time.increaseTo(seasonEnd + 61n);
 
       const initialBalance = await mockUSDC.balanceOf(investor.address);
-      await rainyDayFund.connect(investor).withdraw();
+      await rainyDayFund.connect(investor).redeemShares(investorShares);
       const finalBalance = await mockUSDC.balanceOf(investor.address);
 
       // Should get back more than invested due to premium income
-      expect(finalBalance - initialBalance).to.be.greaterThan(investmentAmount);
+      const actualReturn = finalBalance - initialBalance;
+      expect(actualReturn).to.be.greaterThan(investmentAmount);
+    });
+
+    it("Should handle ERC4626 preview functions", async function () {
+      const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
+
+      const previewShares = await rainyDayFund.previewDeposit(investmentAmount);
+      const previewAssets = await rainyDayFund.previewMint(previewShares);
+
+      expect(previewAssets).to.equal(investmentAmount);
     });
   });
 
   describe("Season Management", function () {
-    it("Should allow owner to start new season", async function () {
-      await expect(rainyDayFund.startNewSeason())
-        .to.emit(rainyDayFund, "NewSeasonStarted")
-        .withArgs(2, PREMIUM, PAYOUT);
+    it("Should allow owner to start new season after full cycle", async function () {
+      const newPremium = ethers.parseUnits("12", USDC_DECIMALS);
+
+      // Fast forward past full season cycle
+      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
+      await time.increaseTo(seasonEnd + 2n * 60n + 1n); // FINISHED state
+
+      expect(await rainyDayFund.getSeasonState()).to.equal(3); // FINISHED
+
+      await expect(rainyDayFund.startNewSeason(newPremium))
+      .to.emit(rainyDayFund, "NewSeasonStarted")
+      .withArgs(2, newPremium, newPremium * 2n);
 
       expect(await rainyDayFund.currentSeasonId()).to.equal(2);
+      expect(await rainyDayFund.getSeasonState()).to.equal(0); // ACTIVE
 
-      const oldSeasonInfo = await rainyDayFund.getPolicyInfo(1);
-      const newSeasonInfo = await rainyDayFund.getPolicyInfo(2);
+      const newSeasonInfo = await rainyDayFund.seasonPolicies(2);
+      expect(newSeasonInfo.premium).to.equal(newPremium);
+      expect(newSeasonInfo.payoutAmount).to.equal(newPremium * 2n);
+    });
 
-      expect(oldSeasonInfo.seasonActive).to.be.false;
-      expect(newSeasonInfo.seasonActive).to.be.true;
+    it("Should not allow starting new season before full cycle", async function () {
+      const newPremium = ethers.parseUnits("12", USDC_DECIMALS);
+
+      await expect(rainyDayFund.startNewSeason(newPremium))
+      .to.be.revertedWith("Season not fully finished yet");
     });
 
     it("Should not allow non-owner to start new season", async function () {
-      await expect(rainyDayFund.connect(farmer).startNewSeason())
-        .to.be.revertedWithCustomError(rainyDayFund, "OwnableUnauthorizedAccount");
+      const newPremium = ethers.parseUnits("12", USDC_DECIMALS);
+
+      // Fast forward to FINISHED state
+      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
+      await time.increaseTo(seasonEnd + 2n * 60n + 1n);
+
+      await expect(rainyDayFund.connect(farmer).startNewSeason(newPremium))
+      .to.be.revertedWithCustomError(rainyDayFund, "OwnableUnauthorizedAccount");
     });
   });
 
-  describe("View Functions", function () {
-    beforeEach(async function () {
-      await rainyDayFund.connect(farmer).buyPolicy(2);
-      await rainyDayFund.startNewSeason();
-      await rainyDayFund.connect(farmer).buyPolicy(1);
-    });
+  describe("Season States and Timing", function () {
+    it("Should transition through all season states correctly", async function () {
+      // Initial state should be ACTIVE
+      expect(await rainyDayFund.getSeasonState()).to.equal(0);
 
-    it("Should return user policies correctly", async function () {
-      const [seasonIds, amounts] = await rainyDayFund.getUserPolicies(farmer.address);
-      
-      expect(seasonIds).to.deep.equal([1n, 2n]);
-      expect(amounts).to.deep.equal([2n, 1n]);
-    });
-
-    it("Should return claimable info correctly", async function () {
-      // Set weather data for season 1
-      await rainyDayFund.updateWeatherData(1, 5);
-
-      // Fast forward past season end
+      // Move to CLAIM period
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
       await time.increaseTo(seasonEnd + 1n);
+      expect(await rainyDayFund.getSeasonState()).to.equal(1);
 
-      const [seasonIds, amounts, totalClaimAmount] = await rainyDayFund.getClaimableInfo(farmer.address);
-      
-      expect(seasonIds).to.deep.equal([1n]);
-      expect(amounts).to.deep.equal([2n]);
-      expect(totalClaimAmount).to.equal(PAYOUT * 2n);
-    });
+      // Move to WITHDRAW period
+      await time.increaseTo(seasonEnd + 61n);
+      expect(await rainyDayFund.getSeasonState()).to.equal(2);
 
-    it("Should return correct contract balance", async function () {
-      const expectedBalance = PREMIUM * 3n; // 2 from season 1 + 1 from season 2
-      expect(await rainyDayFund.getContractBalance()).to.equal(expectedBalance);
-    });
-  });
-
-  describe("Oracle Configuration", function () {
-    it("Should allow owner to set weather oracle", async function () {
-      const mockOracleAddress = addrs[0].address;
-      
-      await rainyDayFund.setWeatherOracle(mockOracleAddress, true);
-      expect(await rainyDayFund.useChainlinkOracle()).to.be.true;
-    });
-
-    it("Should reject enabling Chainlink with zero address", async function () {
-      await expect(rainyDayFund.setWeatherOracle(ethers.ZeroAddress, true))
-        .to.be.revertedWith("Oracle address cannot be zero when enabling Chainlink");
-    });
-  });
-
-  describe("MockUSDC Integration", function () {
-    it("Should work with faucet function", async function () {
-      // Test the faucet functionality
-      const initialBalance = await mockUSDC.balanceOf(addrs[1].address);
-      
-      await mockUSDC.connect(addrs[1]).faucet();
-      
-      const finalBalance = await mockUSDC.balanceOf(addrs[1].address);
-      const expectedIncrease = ethers.parseUnits("1000", USDC_DECIMALS);
-      
-      expect(finalBalance - initialBalance).to.equal(expectedIncrease);
-    });
-
-    it("Should handle multiple faucet calls", async function () {
-      const user = addrs[2];
-      
-      // Multiple faucet calls
-      await mockUSDC.connect(user).faucet();
-      await mockUSDC.connect(user).faucet();
-      
-      const balance = await mockUSDC.balanceOf(user.address);
-      const expectedBalance = ethers.parseUnits("2000", USDC_DECIMALS);
-      
-      expect(balance).to.equal(expectedBalance);
-    });
-
-    it("Should allow buying policies with faucet tokens", async function () {
-      // Use faucet instead of pre-minting
-      await mockUSDC.connect(farmer).faucet(); // Get 1000 USDC
-      
-      // Approve and buy policy
-      await mockUSDC.connect(farmer).approve(
-        await rainyDayFund.getAddress(),
-        ethers.MaxUint256
-      );
-      
-      await expect(rainyDayFund.connect(farmer).buyPolicy(1))
-        .to.emit(rainyDayFund, "PolicyBought");
-        
-      expect(await rainyDayFund.balanceOf(farmer.address, 1)).to.equal(1);
+      // Move to FINISHED period
+      await time.increaseTo(seasonEnd + 121n);
+      expect(await rainyDayFund.getSeasonState()).to.equal(3);
     });
   });
 
   describe("Edge Cases", function () {
-    it("Should handle insufficient risk pool balance for claims", async function () {
-      // Create scenario where risk pool is insufficient
-      await rainyDayFund.connect(farmer).buyPolicy(1); // 200 USDC premium
-      
-      // Set weather for payout (400 USDC needed, but only 200 USDC available)
-      await rainyDayFund.updateWeatherData(1, 5);
+    it("Should handle insufficient funds for claims gracefully", async function () {
+      // Create scenario where contract has insufficient balance
+      await rainyDayFund.connect(farmer).buyPolicy(1); // Only 9 USDC premium, but 18 USDC payout needed
 
+      // Remove some funds from contract (simulate losses)
+      // This is a bit artificial, but demonstrates the check
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
       await time.increaseTo(seasonEnd + 1n);
 
-      // This should still work as the logic checks available balance
-      await expect(rainyDayFund.connect(farmer).claimAll())
-        .to.emit(rainyDayFund, "ClaimMade");
+      await expect(rainyDayFund.connect(farmer).claimPolicies())
+      .to.be.revertedWith("Insufficient funds");
     });
 
     it("Should prevent double claiming", async function () {
+      // Add enough funds to cover payout
+      await rainyDayFund.connect(investor).invest(ethers.parseUnits("1000", USDC_DECIMALS));
       await rainyDayFund.connect(farmer).buyPolicy(1);
-      await rainyDayFund.updateWeatherData(1, 5);
 
       const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
       await time.increaseTo(seasonEnd + 1n);
 
       // First claim should work
-      await rainyDayFund.connect(farmer).claimAll();
+      await rainyDayFund.connect(farmer).claimPolicies();
 
       // Second claim should fail (no tokens left)
-      await expect(rainyDayFund.connect(farmer).claimAll())
-        .to.be.revertedWith("No eligible claims");
+      await expect(rainyDayFund.connect(farmer).claimPolicies())
+      .to.be.revertedWith("No policies to claim");
+    });
+
+    it("Should handle zero investment correctly", async function () {
+      await expect(rainyDayFund.connect(investor).invest(0))
+      .to.be.revertedWith("Amount > 0");
+    });
+
+    it("Should correctly calculate total assets", async function () {
+      expect(await rainyDayFund.totalAssets()).to.equal(0);
+
+      await rainyDayFund.connect(investor).invest(ethers.parseUnits("500", USDC_DECIMALS));
+      expect(await rainyDayFund.totalAssets()).to.equal(ethers.parseUnits("500", USDC_DECIMALS));
+
+      await rainyDayFund.connect(farmer).buyPolicy(1);
+      const expectedTotal = ethers.parseUnits("500", USDC_DECIMALS) + ethers.parseUnits("9", USDC_DECIMALS);
+      expect(await rainyDayFund.totalAssets()).to.equal(expectedTotal);
+    });
+  });
+
+  describe("Policy Token Contract", function () {
+    let policyToken: SeasonPolicyToken;
+
+    beforeEach(async function () {
+      const policyInfo = await rainyDayFund.seasonPolicies(1);
+      policyToken = await ethers.getContractAt("SeasonPolicyToken", policyInfo.policyToken);
+    });
+
+    it("Should have correct name and symbol", async function () {
+      expect(await policyToken.name()).to.equal("RainyDay Policy Season 1");
+      expect(await policyToken.symbol()).to.equal("RDP1");
+    });
+
+    it("Should only allow RainyDayFund to mint/burn", async function () {
+      await expect(policyToken.connect(farmer).mint(farmer.address, 1))
+      .to.be.revertedWith("Only fund");
+
+      await expect(policyToken.connect(farmer).burnFrom(farmer.address, 1))
+      .to.be.revertedWith("Only fund");
+    });
+
+    it("Should track rainyDayFund address correctly", async function () {
+      expect(await policyToken.rainyDayFund()).to.equal(await rainyDayFund.getAddress());
     });
   });
 });
