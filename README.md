@@ -1,4 +1,4 @@
-# decentralized weather insurance
+# Decentralized Weather Insurance
 
 Group project (09/2025): EVM-based smart contract with react app for the blockchain challenge @University of Basel.
 
@@ -14,7 +14,7 @@ Group project (09/2025): EVM-based smart contract with react app for the blockch
   - Copy the file `deployment-info.json` into /client/public.
   - Go to the /client folder and run `npm start`. This will launch the frontend at port 3000.
 
-**OPTION 2 (automatic):  
+**OPTION 2 (automatic):**  
   - In the project root, run `node start.js` and watch!  
 
 **In both cases, go to the project root and run `node cleanup.js` to remove old files after running the program. Optionally, run `npx hardhat clean` in the contract folder to be extra sure.
