@@ -17,7 +17,7 @@ Group project (09/2025): EVM-based smart contract with react app for the blockch
 **OPTION 2 (automatic):**  
   - In the project root, run `node start.js` and watch!  
 
-**In both cases, go to the project root and run `node cleanup.js` to remove old files after running the program. Optionally, run `npx hardhat clean` in the contract folder to be extra sure.
+**In both cases,** go to the project root and run `node cleanup.js` to remove old files after running the program. Optionally, run `npx hardhat clean` in the contract folder to be extra sure.
 
 ![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white)
 ![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
