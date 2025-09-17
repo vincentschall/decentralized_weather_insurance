@@ -4,17 +4,20 @@ Group project (09/2025): EVM-based smart contract with react app for the blockch
 
 ## Needed installations (not covered here)
 
-- npm, hardhat, metamask
+- hardhat, node.js
 
 ## Quick startup guide
 
-  - To just run the contracts, go into contract folder (`cd contract`).
-  - Install necessary dependencies (should be done automatically at first startup) . Sometimes `npm install @openzeppelin/contracts` is needed once.
-  - To build project: `npx hardhat compile` or `npx hardhat build`.
-  - To then run test, use `npx hardhat test` or `npx hardhat coverage`.
-  - End with: `npx hardhat clean`.
-  - To run react app: go to client folder (`cd client` from project root).
-  - Run `npm start`. The website should be at `localhost:3000`.
+**OPTION 1 (manual):**  
+  - Navigate into /contract and run `npx hardhat node` to start your local blockchain.
+  - In a new terminal, go into /contract again and run `npx hardhat run /scripts/deploy-for-testing.js --network localhost`. This deploys the contracts onto your local chain.
+  - Copy the file `deployment-info.json` into /client/public.
+  - Go to the /client folder and run `npm start`. This will launch the frontend at port 3000.
+
+**OPTION 2 (automatic):  
+  - In the project root, run `node start.js` and watch!  
+
+**In both cases, go to the project root and run `node cleanup.js` to remove old files after running the program. Optionally, run `npx hardhat clean` in the contract folder to be extra sure.
 
 ![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white)
 ![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)

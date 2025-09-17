@@ -27,6 +27,10 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
 
     AggregatorV3Interface public weatherFeed;
 
+    // Testing variables for time control
+    uint256 public testingTimeOffset;
+    bool public testingMode;
+
     enum SeasonState { ACTIVE, CLAIM, WITHDRAW, FINISHED }
 
     struct SeasonPolicy {
@@ -44,6 +48,7 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
     event InvestmentMade(address indexed investor, uint256 amount);
     event InvestmentWithdrawn(address indexed investor, uint256 amount);
     event NewSeasonStarted(uint256 seasonId, uint256 premium, uint256 payoutAmount);
+    event TimeAdvanced(uint256 newTimestamp, SeasonState newState);
 
     constructor(address _usdcAddress, address _weatherOracle)
         ERC4626(IERC20Metadata(_usdcAddress))
@@ -58,7 +63,46 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
 
         currentSeasonId = 1;
         _initializeSeason(currentSeasonId);
-        seasonOverTimeStamp = block.timestamp + 2 * timeUnit; // short demo
+        seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit; // short demo
+        
+        // Enable testing mode by default for local testing
+        testingMode = true;
+    }
+
+    // Testing function to get current time (can be offset in testing mode)
+    function getCurrentTime() public view returns (uint256) {
+        if (testingMode) {
+            return block.timestamp + testingTimeOffset;
+        }
+        return block.timestamp;
+    }
+
+    // Testing function to advance time manually
+    function advanceToNextPhase() external onlyOwner {
+        require(testingMode, "Not in testing mode");
+        
+        SeasonState currentState = getSeasonState();
+        
+        if (currentState == SeasonState.ACTIVE) {
+            // Advance to CLAIM phase
+            testingTimeOffset = seasonOverTimeStamp - block.timestamp + 1;
+        } else if (currentState == SeasonState.CLAIM) {
+            // Advance to WITHDRAW phase
+            testingTimeOffset = seasonOverTimeStamp - block.timestamp + timeUnit + 1;
+        } else if (currentState == SeasonState.WITHDRAW) {
+            // Advance to FINISHED phase
+            testingTimeOffset = seasonOverTimeStamp - block.timestamp + 2 * timeUnit + 1;
+        }
+        
+        emit TimeAdvanced(getCurrentTime(), getSeasonState());
+    }
+
+    // Testing function to set testing mode
+    function setTestingMode(bool _enabled) external onlyOwner {
+        testingMode = _enabled;
+        if (!_enabled) {
+            testingTimeOffset = 0;
+        }
     }
 
     function _initializeSeason(uint256 seasonId) internal {
@@ -69,7 +113,7 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
         );
 
         seasonPolicies[seasonId] = SeasonPolicy({
-            creationTimestamp: block.timestamp,
+            creationTimestamp: getCurrentTime(),
             payoutAmount: premium * 2,
             premium: premium,
             totalPoliciesSold: 0,
@@ -80,11 +124,12 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
     }
 
     function getSeasonState() public view returns (SeasonState) {
-        if (block.timestamp < seasonOverTimeStamp) {
+        uint256 currentTime = getCurrentTime();
+        if (currentTime < seasonOverTimeStamp) {
             return SeasonState.ACTIVE;
-        } else if (block.timestamp < seasonOverTimeStamp + timeUnit) {
+        } else if (currentTime < seasonOverTimeStamp + timeUnit) {
             return SeasonState.CLAIM;
-        } else if (block.timestamp < seasonOverTimeStamp + 2 * timeUnit) {
+        } else if (currentTime < seasonOverTimeStamp + 2 * timeUnit) {
             return SeasonState.WITHDRAW;
         } else {
             return SeasonState.FINISHED;
@@ -99,7 +144,7 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
     function startNewSeason(uint256 _premium) external onlyOwner onlyAfterFullSeasonCycle {
         currentSeasonId++;
         premium = _premium;
-        seasonOverTimeStamp = block.timestamp + 2 * timeUnit;
+        seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit;
         _initializeSeason(currentSeasonId);
     }
 
