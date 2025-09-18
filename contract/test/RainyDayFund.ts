@@ -16,8 +16,9 @@ describe("RainyDayFund", function () {
   const USDC_DECIMALS = 6;
   const INITIAL_USDC_BALANCE = ethers.parseUnits("10000", USDC_DECIMALS); // 10,000 USDC
   const PREMIUM = ethers.parseUnits("9", USDC_DECIMALS);
-  const PAYOUT = PREMIUM * 2n;
+  const PAYOUT = PREMIUM * 4n; // Updated to 4x premium
   const INITIAL_WEATHER = 5; // 1-9 leads to payout, 10 or more is no payout
+  const TIME_UNIT = 30n * 24n * 60n * 60n; // 30 days in seconds
 
   beforeEach(async function () {
     // Get signers
@@ -66,17 +67,63 @@ describe("RainyDayFund", function () {
     it("Should set correct initial season parameters", async function () {
       const policyInfo = await rainyDayFund.seasonPolicies(1);
       expect(policyInfo.premium).to.equal(PREMIUM);
-      expect(policyInfo.payoutAmount).to.equal(PAYOUT);
+      expect(policyInfo.payoutAmount).to.equal(PAYOUT); // Now 4x premium
       expect(policyInfo.totalPoliciesSold).to.equal(0);
     });
 
     it("Should initialize in ACTIVE state", async function () {
       expect(await rainyDayFund.getSeasonState()).to.equal(0); // ACTIVE
     });
+
+    it("Should be in testing mode by default", async function () {
+      expect(await rainyDayFund.testingMode()).to.equal(true);
+    });
+  });
+
+  describe("Testing Mode Functions", function () {
+    it("Should allow owner to advance to next phase", async function () {
+      // Should start in ACTIVE
+      expect(await rainyDayFund.getSeasonState()).to.equal(0); // ACTIVE
+
+      // Advance to INACTIVE
+      await expect(rainyDayFund.advanceToNextPhase())
+        .to.emit(rainyDayFund, "TimeAdvanced");
+      
+      expect(await rainyDayFund.getSeasonState()).to.equal(1); // INACTIVE
+
+      // Advance to CLAIM
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(2); // CLAIM
+
+      // Advance to WITHDRAW
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(3); // WITHDRAW
+
+      // Advance to FINISHED
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(4); // FINISHED
+    });
+
+    it("Should allow owner to toggle testing mode", async function () {
+      await rainyDayFund.setTestingMode(false);
+      expect(await rainyDayFund.testingMode()).to.equal(false);
+
+      // Should not be able to advance phases when testing mode is off
+      await expect(rainyDayFund.advanceToNextPhase())
+        .to.be.revertedWith("Not in testing mode");
+    });
+
+    it("Should not allow non-owner to use testing functions", async function () {
+      await expect(rainyDayFund.connect(farmer).advanceToNextPhase())
+        .to.be.revertedWithCustomError(rainyDayFund, "OwnableUnauthorizedAccount");
+
+      await expect(rainyDayFund.connect(farmer).setTestingMode(false))
+        .to.be.revertedWithCustomError(rainyDayFund, "OwnableUnauthorizedAccount");
+    });
   });
 
   describe("Policy Purchase", function () {
-    it("Should allow buying policies", async function () {
+    it("Should allow buying policies in ACTIVE state", async function () {
       const amount = 2;
       const contractPremium = PREMIUM;
       const totalPremium = contractPremium * BigInt(amount);
@@ -101,11 +148,16 @@ describe("RainyDayFund", function () {
     });
 
     it("Should reject purchase when not in active period", async function () {
-      // Fast forward to claim period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 1n);
+      // Advance to INACTIVE phase
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(1); // INACTIVE
 
-      expect(await rainyDayFund.getSeasonState()).to.equal(1); // CLAIM state
+      await expect(rainyDayFund.connect(farmer).buyPolicy(1))
+        .to.be.revertedWith("Not in active period");
+
+      // Also test in CLAIM phase
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(2); // CLAIM
 
       await expect(rainyDayFund.connect(farmer).buyPolicy(1))
         .to.be.revertedWith("Not in active period");
@@ -142,19 +194,19 @@ describe("RainyDayFund", function () {
     });
 
     it("Should allow claiming when conditions are met", async function () {
-      // Fast forward to claim period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 1n);
+      // Advance to CLAIM period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
 
-      expect(await rainyDayFund.getSeasonState()).to.equal(1); // CLAIM state
+      expect(await rainyDayFund.getSeasonState()).to.equal(2); // CLAIM state
 
       const initialBalance = await mockUSDC.balanceOf(farmer.address);
       const contractPayout = PAYOUT;
       const expectedPayout = contractPayout * 3n; // 3 policies
 
       await expect(rainyDayFund.connect(farmer).claimPolicies())
-      .to.emit(rainyDayFund, "ClaimMade")
-      .withArgs(farmer.address, 1, 3, expectedPayout);
+        .to.emit(rainyDayFund, "ClaimMade")
+        .withArgs(farmer.address, 1, 3, expectedPayout);
 
       const finalBalance = await mockUSDC.balanceOf(farmer.address);
       expect(finalBalance - initialBalance).to.equal(expectedPayout);
@@ -169,36 +221,41 @@ describe("RainyDayFund", function () {
       // Update mock oracle to return good weather (>= 10)
       await mockWeatherOracle.updatePrice(15);
 
-      // Fast forward to claim period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 1n);
+      // Advance to CLAIM period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
 
       await expect(rainyDayFund.connect(farmer).claimPolicies())
-      .to.be.revertedWith("Weather not bad enough");
+        .to.be.revertedWith("Weather not bad enough");
     });
 
     it("Should not allow claiming in wrong period", async function () {
       // Try claiming in ACTIVE period
       await expect(rainyDayFund.connect(farmer).claimPolicies())
-      .to.be.revertedWith("Not in claim period");
+        .to.be.revertedWith("Not in claim period");
 
-      // Fast forward to WITHDRAW period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 61n); // 1 minute + 1 second for WITHDRAW period
+      // Try claiming in INACTIVE period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await expect(rainyDayFund.connect(farmer).claimPolicies())
+        .to.be.revertedWith("Not in claim period");
 
-      expect(await rainyDayFund.getSeasonState()).to.equal(2); // WITHDRAW state
+      // Skip to WITHDRAW period
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
+      await rainyDayFund.advanceToNextPhase(); // CLAIM -> WITHDRAW
+
+      expect(await rainyDayFund.getSeasonState()).to.equal(3); // WITHDRAW state
 
       await expect(rainyDayFund.connect(farmer).claimPolicies())
-      .to.be.revertedWith("Not in claim period");
+        .to.be.revertedWith("Not in claim period");
     });
 
     it("Should not allow claiming without policies", async function () {
-      // Fast forward to claim period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 1n);
+      // Advance to CLAIM period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
 
       await expect(rainyDayFund.connect(investor).claimPolicies())
-      .to.be.revertedWith("No policies to claim");
+        .to.be.revertedWith("No policies to claim");
     });
   });
 
@@ -209,8 +266,8 @@ describe("RainyDayFund", function () {
       const shares = await rainyDayFund.connect(investor).deposit.staticCall(investmentAmount, investor.address);
 
       await expect(rainyDayFund.connect(investor).deposit(investmentAmount, investor.address))
-      .to.emit(rainyDayFund, "Deposit")
-      .withArgs(investor.address, investor.address, investmentAmount, shares);
+        .to.emit(rainyDayFund, "Deposit")
+        .withArgs(investor.address, investor.address, investmentAmount, shares);
 
       expect(await rainyDayFund.balanceOf(investor.address)).to.equal(shares);
       expect(await rainyDayFund.totalAssets()).to.equal(investmentAmount);
@@ -220,11 +277,34 @@ describe("RainyDayFund", function () {
       const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
 
       await expect(rainyDayFund.connect(investor).invest(investmentAmount))
-      .to.emit(rainyDayFund, "InvestmentMade")
-      .withArgs(investor.address, investmentAmount);
+        .to.emit(rainyDayFund, "InvestmentMade")
+        .withArgs(investor.address, investmentAmount);
 
       expect(await rainyDayFund.balanceOf(investor.address)).to.be.greaterThan(0);
       expect(await rainyDayFund.totalAssets()).to.equal(investmentAmount);
+    });
+
+    it("Should allow investments in INACTIVE period", async function () {
+      const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
+
+      // Advance to INACTIVE period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      expect(await rainyDayFund.getSeasonState()).to.equal(1); // INACTIVE
+
+      await expect(rainyDayFund.connect(investor).invest(investmentAmount))
+        .to.emit(rainyDayFund, "InvestmentMade")
+        .withArgs(investor.address, investmentAmount);
+    });
+
+    it("Should not allow investments outside ACTIVE/INACTIVE periods", async function () {
+      const investmentAmount = ethers.parseUnits("1000", USDC_DECIMALS);
+
+      // Advance to CLAIM period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
+
+      await expect(rainyDayFund.connect(investor).invest(investmentAmount))
+        .to.be.revertedWith("Season not active aymore");
     });
 
     it("Should allow withdrawal during withdrawal period using redeemShares", async function () {
@@ -234,17 +314,18 @@ describe("RainyDayFund", function () {
       await rainyDayFund.connect(investor).invest(investmentAmount);
       const shares = await rainyDayFund.balanceOf(investor.address);
 
-      // Fast forward to withdrawal period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 61n); // WITHDRAW period
+      // Advance to withdrawal period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
+      await rainyDayFund.advanceToNextPhase(); // CLAIM -> WITHDRAW
 
-      expect(await rainyDayFund.getSeasonState()).to.equal(2); // WITHDRAW state
+      expect(await rainyDayFund.getSeasonState()).to.equal(3); // WITHDRAW state
 
       const initialBalance = await mockUSDC.balanceOf(investor.address);
 
       await expect(rainyDayFund.connect(investor).redeemShares(shares))
-      .to.emit(rainyDayFund, "InvestmentWithdrawn")
-      .withArgs(investor.address, investmentAmount);
+        .to.emit(rainyDayFund, "InvestmentWithdrawn")
+        .withArgs(investor.address, investmentAmount);
 
       const finalBalance = await mockUSDC.balanceOf(investor.address);
       expect(finalBalance - initialBalance).to.equal(investmentAmount);
@@ -258,14 +339,17 @@ describe("RainyDayFund", function () {
 
       // Try in ACTIVE period
       await expect(rainyDayFund.connect(investor).redeemShares(shares))
-      .to.be.revertedWith("Not in withdrawal period");
+        .to.be.revertedWith("Not in withdrawal period");
+
+      // Try in INACTIVE period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await expect(rainyDayFund.connect(investor).redeemShares(shares))
+        .to.be.revertedWith("Not in withdrawal period");
 
       // Try in CLAIM period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 1n);
-
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
       await expect(rainyDayFund.connect(investor).redeemShares(shares))
-      .to.be.revertedWith("Not in withdrawal period");
+        .to.be.revertedWith("Not in withdrawal period");
     });
 
     it("Should calculate proportional withdrawal with profits/losses", async function () {
@@ -282,9 +366,10 @@ describe("RainyDayFund", function () {
       // Farmer buys policy, adding to asset pool
       await rainyDayFund.connect(farmer).buyPolicy(1); // Adds 9 USDC
 
-      // Fast forward to withdrawal period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 61n);
+      // Advance to withdrawal period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
+      await rainyDayFund.advanceToNextPhase(); // CLAIM -> WITHDRAW
 
       const initialBalance = await mockUSDC.balanceOf(investor.address);
       await rainyDayFund.connect(investor).redeemShares(investorShares);
@@ -309,75 +394,81 @@ describe("RainyDayFund", function () {
     it("Should allow owner to start new season after full cycle", async function () {
       const newPremium = ethers.parseUnits("12", USDC_DECIMALS);
 
-      // Fast forward past full season cycle
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 2n * 60n + 1n); // FINISHED state
+      // Advance through full season cycle
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
+      await rainyDayFund.advanceToNextPhase(); // CLAIM -> WITHDRAW
+      await rainyDayFund.advanceToNextPhase(); // WITHDRAW -> FINISHED
 
-      expect(await rainyDayFund.getSeasonState()).to.equal(3); // FINISHED
+      expect(await rainyDayFund.getSeasonState()).to.equal(4); // FINISHED
 
       await expect(rainyDayFund.startNewSeason(newPremium))
-      .to.emit(rainyDayFund, "NewSeasonStarted")
-      .withArgs(2, newPremium, newPremium * 2n);
+        .to.emit(rainyDayFund, "NewSeasonStarted")
+        .withArgs(2, newPremium, newPremium * 4n); // 4x payout
 
       expect(await rainyDayFund.currentSeasonId()).to.equal(2);
       expect(await rainyDayFund.getSeasonState()).to.equal(0); // ACTIVE
 
       const newSeasonInfo = await rainyDayFund.seasonPolicies(2);
       expect(newSeasonInfo.premium).to.equal(newPremium);
-      expect(newSeasonInfo.payoutAmount).to.equal(newPremium * 2n);
+      expect(newSeasonInfo.payoutAmount).to.equal(newPremium * 4n);
     });
 
     it("Should not allow starting new season before full cycle", async function () {
       const newPremium = ethers.parseUnits("12", USDC_DECIMALS);
 
       await expect(rainyDayFund.startNewSeason(newPremium))
-      .to.be.revertedWith("Season not fully finished yet");
+        .to.be.revertedWith("Season not fully finished yet");
     });
 
     it("Should not allow non-owner to start new season", async function () {
       const newPremium = ethers.parseUnits("12", USDC_DECIMALS);
 
-      // Fast forward to FINISHED state
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 2n * 60n + 1n);
+      // Advance to FINISHED state
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
+      await rainyDayFund.advanceToNextPhase(); // CLAIM -> WITHDRAW
+      await rainyDayFund.advanceToNextPhase(); // WITHDRAW -> FINISHED
 
       await expect(rainyDayFund.connect(farmer).startNewSeason(newPremium))
-      .to.be.revertedWithCustomError(rainyDayFund, "OwnableUnauthorizedAccount");
+        .to.be.revertedWithCustomError(rainyDayFund, "OwnableUnauthorizedAccount");
     });
   });
 
   describe("Season States and Timing", function () {
     it("Should transition through all season states correctly", async function () {
       // Initial state should be ACTIVE
-      expect(await rainyDayFund.getSeasonState()).to.equal(0);
+      expect(await rainyDayFund.getSeasonState()).to.equal(0); // ACTIVE
+
+      // Move to INACTIVE period
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(1); // INACTIVE
 
       // Move to CLAIM period
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 1n);
-      expect(await rainyDayFund.getSeasonState()).to.equal(1);
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(2); // CLAIM
 
       // Move to WITHDRAW period
-      await time.increaseTo(seasonEnd + 61n);
-      expect(await rainyDayFund.getSeasonState()).to.equal(2);
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(3); // WITHDRAW
 
       // Move to FINISHED period
-      await time.increaseTo(seasonEnd + 121n);
-      expect(await rainyDayFund.getSeasonState()).to.equal(3);
+      await rainyDayFund.advanceToNextPhase();
+      expect(await rainyDayFund.getSeasonState()).to.equal(4); // FINISHED
     });
   });
 
   describe("Edge Cases", function () {
     it("Should handle insufficient funds for claims gracefully", async function () {
       // Create scenario where contract has insufficient balance
-      await rainyDayFund.connect(farmer).buyPolicy(1); // Only 9 USDC premium, but 18 USDC payout needed
+      await rainyDayFund.connect(farmer).buyPolicy(1); // Only 9 USDC premium, but 36 USDC payout needed
 
-      // Remove some funds from contract (simulate losses)
-      // This is a bit artificial, but demonstrates the check
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 1n);
+      // Advance to CLAIM period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
 
       await expect(rainyDayFund.connect(farmer).claimPolicies())
-      .to.be.revertedWith("Insufficient funds");
+        .to.be.revertedWith("Insufficient funds");
     });
 
     it("Should prevent double claiming", async function () {
@@ -385,20 +476,21 @@ describe("RainyDayFund", function () {
       await rainyDayFund.connect(investor).invest(ethers.parseUnits("1000", USDC_DECIMALS));
       await rainyDayFund.connect(farmer).buyPolicy(1);
 
-      const seasonEnd = await rainyDayFund.seasonOverTimeStamp();
-      await time.increaseTo(seasonEnd + 1n);
+      // Advance to CLAIM period
+      await rainyDayFund.advanceToNextPhase(); // ACTIVE -> INACTIVE
+      await rainyDayFund.advanceToNextPhase(); // INACTIVE -> CLAIM
 
       // First claim should work
       await rainyDayFund.connect(farmer).claimPolicies();
 
       // Second claim should fail (no tokens left)
       await expect(rainyDayFund.connect(farmer).claimPolicies())
-      .to.be.revertedWith("No policies to claim");
+        .to.be.revertedWith("No policies to claim");
     });
 
     it("Should handle zero investment correctly", async function () {
       await expect(rainyDayFund.connect(investor).invest(0))
-      .to.be.revertedWith("Amount > 0");
+        .to.be.revertedWith("Amount > 0");
     });
 
     it("Should correctly calculate total assets", async function () {
@@ -428,10 +520,10 @@ describe("RainyDayFund", function () {
 
     it("Should only allow RainyDayFund to mint/burn", async function () {
       await expect(policyToken.connect(farmer).mint(farmer.address, 1))
-      .to.be.revertedWith("Only fund");
+        .to.be.revertedWith("Only fund");
 
       await expect(policyToken.connect(farmer).burnFrom(farmer.address, 1))
-      .to.be.revertedWith("Only fund");
+        .to.be.revertedWith("Only fund");
     });
 
     it("Should track rainyDayFund address correctly", async function () {

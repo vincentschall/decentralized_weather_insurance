@@ -22,7 +22,7 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
 
     uint256 public currentSeasonId;
     uint256 public seasonOverTimeStamp;
-    uint256 constant timeUnit = 1 minutes; // short for demo
+    uint256 public constant timeUnit = 30 days;
     uint256 premium = 9 * 10**6; // 9 USDC
 
     AggregatorV3Interface public weatherFeed;
@@ -31,7 +31,7 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
     uint256 public testingTimeOffset;
     bool public testingMode;
 
-    enum SeasonState { ACTIVE, CLAIM, WITHDRAW, FINISHED }
+    enum SeasonState { ACTIVE, INACTIVE, CLAIM, WITHDRAW, FINISHED }
 
     struct SeasonPolicy {
         uint256 creationTimestamp;
@@ -86,12 +86,14 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
         if (currentState == SeasonState.ACTIVE) {
             // Advance to CLAIM phase
             testingTimeOffset = seasonOverTimeStamp - block.timestamp + 1;
+        } else if (currentState == SeasonState.INACTIVE) {
+            testingTimeOffset = seasonOverTimeStamp - block.timestamp + timeUnit + 1;
         } else if (currentState == SeasonState.CLAIM) {
             // Advance to WITHDRAW phase
-            testingTimeOffset = seasonOverTimeStamp - block.timestamp + timeUnit + 1;
+            testingTimeOffset = seasonOverTimeStamp - block.timestamp + 2 * timeUnit + 1;
         } else if (currentState == SeasonState.WITHDRAW) {
             // Advance to FINISHED phase
-            testingTimeOffset = seasonOverTimeStamp - block.timestamp + 2 * timeUnit + 1;
+            testingTimeOffset = seasonOverTimeStamp - block.timestamp + 3 * timeUnit + 1;
         }
         
         emit TimeAdvanced(getCurrentTime(), getSeasonState());
@@ -114,19 +116,21 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
 
         seasonPolicies[seasonId] = SeasonPolicy({
             creationTimestamp: getCurrentTime(),
-            payoutAmount: premium * 2,
+            payoutAmount: premium * 4,
             premium: premium,
             totalPoliciesSold: 0,
             policyToken: policyToken
         });
 
-        emit NewSeasonStarted(seasonId, premium, premium * 2);
+        emit NewSeasonStarted(seasonId, premium, seasonPolicies[seasonId].payoutAmount);
     }
 
     function getSeasonState() public view returns (SeasonState) {
         uint256 currentTime = getCurrentTime();
-        if (currentTime < seasonOverTimeStamp) {
+        if (currentTime < seasonOverTimeStamp - timeUnit) {
             return SeasonState.ACTIVE;
+        } else if (currentTime < seasonOverTimeStamp) {
+            return SeasonState.INACTIVE;
         } else if (currentTime < seasonOverTimeStamp + timeUnit) {
             return SeasonState.CLAIM;
         } else if (currentTime < seasonOverTimeStamp + 2 * timeUnit) {
@@ -138,6 +142,14 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
 
     modifier onlyAfterFullSeasonCycle() {
         require(getSeasonState() == SeasonState.FINISHED, "Season not fully finished yet");
+        _;
+    }
+
+    modifier onlyDuringSeason() {
+        require(
+          getSeasonState() == SeasonState.ACTIVE ||
+          getSeasonState() == SeasonState.INACTIVE,
+          "Season not active aymore");
         _;
     }
 
@@ -189,7 +201,7 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
     }
 
     // ERC4626 investment logic
-    function invest(uint256 assets) external nonReentrant {
+    function invest(uint256 assets) external nonReentrant onlyDuringSeason {
         require(assets > 0, "Amount > 0");
         deposit(assets, msg.sender);
         emit InvestmentMade(msg.sender, assets);
