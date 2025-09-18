@@ -46,12 +46,12 @@ export default function TestingInterface() {
   const [deployed, setDeployed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState([]);
-
+  
   // Contract instances
   const [provider, setProvider] = useState(null);
   const [contracts, setContracts] = useState({});
   const [accounts, setAccounts] = useState({});
-
+  
   // Contract state
   const [contractState, setContractState] = useState({
     currentSeasonId: 0,
@@ -62,7 +62,7 @@ export default function TestingInterface() {
     contractBalance: 0,
     weatherValue: 0
   });
-
+  
   // Account balances
   const [balances, setBalances] = useState({
     farmer1: { usdcBalance: 0, policyTokens: 0, shares: 0 },
@@ -112,13 +112,13 @@ export default function TestingInterface() {
         MOCK_USDC_ABI,
         localProvider
       );
-
+      
       const mockWeatherOracle = new ethers.Contract(
         deploymentInfo.contracts.MockWeatherOracle,
         MOCK_WEATHER_ORACLE_ABI,
         localProvider
       );
-
+      
       const rainyDayFund = new ethers.Contract(
         deploymentInfo.contracts.RainyDayFund,
         RAINY_DAY_FUND_ABI,
@@ -126,11 +126,11 @@ export default function TestingInterface() {
       );
 
       addLog('✅ Connected to deployed contracts', 'success');
-
+      
       setContracts({ mockUSDC, mockWeatherOracle, rainyDayFund });
       setDeployed(true);
       await updateAllData();
-
+      
       addLog('🎉 Ready for testing!', 'success');
     } catch (error) {
       addLog(`❌ Connection failed: ${error.message}`, 'error');
@@ -169,7 +169,7 @@ export default function TestingInterface() {
       const newBalances = {};
       for (const [key, signer] of Object.entries(accounts)) {
         if (key === 'owner') continue;
-
+        
         const usdcBalance = await contracts.mockUSDC.balanceOf(signer.address);
         const policyTokens = await policyToken.balanceOf(signer.address);
         const shares = await contracts.rainyDayFund.balanceOf(signer.address);
@@ -190,7 +190,7 @@ export default function TestingInterface() {
   const setWeather = async (value) => {
     try {
       setLoading(true);
-      const tx = await contracts.mockWeatherOracle.updatePrice(value);
+      const tx = await contracts.mockWeatherOracle.connect(accounts.owner).updatePrice(value);
       await tx.wait();
       addLog(`🌤️ Weather set to ${value} (${value < 10 ? 'Bad - Payout eligible' : 'Good - No payout'})`, 'success');
       await updateAllData();
@@ -204,10 +204,10 @@ export default function TestingInterface() {
   const advancePhase = async () => {
     try {
       setLoading(true);
-      const tx = await contracts.rainyDayFund.advanceToNextPhase();
+      const tx = await contracts.rainyDayFund.connect(accounts.owner).advanceToNextPhase();
       await tx.wait();
       await updateAllData();
-      addLog(`⏰ Advanced to ${seasonStateNames[contractState.seasonState]} phase`, 'success');
+      addLog(`⏰ Advanced to next phase`, 'success');
     } catch (error) {
       addLog(`❌ Failed to advance phase: ${error.message}`, 'error');
     } finally {
@@ -281,7 +281,7 @@ export default function TestingInterface() {
     try {
       setLoading(true);
       const newPremium = ethers.parseUnits('9', 6); // 9 USDC
-      const tx = await contracts.rainyDayFund.startNewSeason(newPremium);
+      const tx = await contracts.rainyDayFund.connect(accounts.owner).startNewSeason(newPremium);
       await tx.wait();
       addLog(`✅ Started Season ${contractState.currentSeasonId + 1}`, 'success');
       await updateAllData();
@@ -303,12 +303,19 @@ export default function TestingInterface() {
             Real Solidity contract testing environment
           </p>
         </div>
-
+        
         <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full">
           <div className="text-center">
             <AlertCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Ready to Connect</h2>
-
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Ready to Deploy</h2>
+            <div className="text-sm text-gray-600 mb-6 text-left">
+              <p className="mb-2">Prerequisites:</p>
+              <ol className="list-decimal ml-4 space-y-1">
+                <li>Run <code className="bg-gray-100 px-1 rounded">npx hardhat node</code> in your contracts folder</li>
+                <li>Run <code className="bg-gray-100 px-1 rounded">npx hardhat run scripts/deploy-for-testing.js --network localhost</code></li>
+                <li>Copy deployment-info.json to your React public folder</li>
+              </ol>
+            </div>
             <button
               onClick={connectToDeployedContracts}
               disabled={loading}
@@ -337,7 +344,7 @@ export default function TestingInterface() {
               <Settings className="w-6 h-6 mr-2" />
               Admin Controls
             </h2>
-
+            
             {/* Weather Control */}
             <div className="mb-6">
               <h3 className="font-semibold mb-2 flex items-center">
@@ -397,7 +404,7 @@ export default function TestingInterface() {
               <TrendingUp className="w-6 h-6 mr-2" />
               Contract State
             </h2>
-
+            
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="font-semibold">Season:</span>
@@ -406,11 +413,11 @@ export default function TestingInterface() {
               <div className="flex justify-between">
                 <span className="font-semibold">Phase:</span>
                 <span className={`px-2 py-1 rounded text-sm ${
-contractState.seasonState === 0 ? 'bg-green-100 text-green-800' :
-contractState.seasonState === 1 ? 'bg-yellow-100 text-yellow-800' :
-contractState.seasonState === 2 ? 'bg-blue-100 text-blue-800' :
-'bg-gray-100 text-gray-800'
-}`}>
+                  contractState.seasonState === 0 ? 'bg-green-100 text-green-800' :
+                  contractState.seasonState === 1 ? 'bg-yellow-100 text-yellow-800' :
+                  contractState.seasonState === 2 ? 'bg-blue-100 text-blue-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
                   {seasonStateNames[contractState.seasonState]}
                 </span>
               </div>
@@ -441,10 +448,10 @@ contractState.seasonState === 2 ? 'bg-blue-100 text-blue-800' :
             <div className="h-64 overflow-y-auto space-y-1 text-sm">
               {logs.map((log, i) => (
                 <div key={i} className={`p-2 rounded ${
-log.type === 'success' ? 'bg-green-50 text-green-800' :
-log.type === 'error' ? 'bg-red-50 text-red-800' :
-'bg-gray-50 text-gray-800'
-}`}>
+                  log.type === 'success' ? 'bg-green-50 text-green-800' :
+                  log.type === 'error' ? 'bg-red-50 text-red-800' :
+                  'bg-gray-50 text-gray-800'
+                }`}>
                   <span className="text-gray-500">{log.timestamp}</span> {log.message}
                 </div>
               ))}
@@ -460,7 +467,7 @@ log.type === 'error' ? 'bg-red-50 text-red-800' :
               <Users className="w-6 h-6 mr-2" />
               Farmers
             </h2>
-
+            
             {['farmer1', 'farmer2'].map((farmerKey) => (
               <div key={farmerKey} className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <h3 className="font-bold mb-2">{farmerKey.charAt(0).toUpperCase() + farmerKey.slice(1)}</h3>
@@ -474,7 +481,7 @@ log.type === 'error' ? 'bg-red-50 text-red-800' :
                     <span>{balances[farmerKey]?.policyTokens || 0}</span>
                   </div>
                 </div>
-
+                
                 <div className="space-y-2">
                   {contractState.seasonState === 0 && (
                     <div className="flex gap-1">
@@ -494,7 +501,7 @@ log.type === 'error' ? 'bg-red-50 text-red-800' :
                       </button>
                     </div>
                   )}
-
+                  
                   {contractState.seasonState === 1 && balances[farmerKey]?.policyTokens > 0 && (
                     <button
                       onClick={() => claimPolicies(farmerKey)}
@@ -515,7 +522,7 @@ log.type === 'error' ? 'bg-red-50 text-red-800' :
               <DollarSign className="w-6 h-6 mr-2" />
               Investors
             </h2>
-
+            
             {['investor1', 'investor2'].map((investorKey) => (
               <div key={investorKey} className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <h3 className="font-bold mb-2">{investorKey.charAt(0).toUpperCase() + investorKey.slice(1)}</h3>
@@ -529,7 +536,7 @@ log.type === 'error' ? 'bg-red-50 text-red-800' :
                     <span>{balances[investorKey]?.shares?.toFixed(4) || '0'}</span>
                   </div>
                 </div>
-
+                
                 <div className="space-y-2">
                   <div className="flex gap-1">
                     <button
@@ -547,7 +554,7 @@ log.type === 'error' ? 'bg-red-50 text-red-800' :
                       Invest 500
                     </button>
                   </div>
-
+                  
                   {contractState.seasonState === 2 && balances[investorKey]?.shares > 0 && (
                     <button
                       onClick={() => withdraw(investorKey)}
