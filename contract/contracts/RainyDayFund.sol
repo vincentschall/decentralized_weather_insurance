@@ -96,7 +96,9 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
       uint256 target = seasonOverTimeStamp + 2 * timeUnit + 1;
       testingTimeOffset = target - nowBlock;
     } else {
-      revert("Already finished");
+      // already finished, do nothing
+      emit TimeAdvanced(getCurrentTime(), getSeasonState());
+      return;
     }
 
     emit TimeAdvanced(getCurrentTime(), getSeasonState());
