@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { AlertCircle, Users, TrendingUp, CloudRain, Sun, Clock, DollarSign } from 'lucide-react';
 
-// Contract ABIs (simplified for the functions we need)
 const MOCK_USDC_ABI = [
   "constructor()",
   "function mint(address to, uint256 amount) external",
@@ -44,12 +43,10 @@ export default function TestingInterface() {
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState([]);
   
-  // Contract instances
   const [provider, setProvider] = useState(null);
   const [contracts, setContracts] = useState({});
   const [accounts, setAccounts] = useState({});
   
-  // Contract state
   const [contractState, setContractState] = useState({
     currentSeasonId: 0,
     seasonState: 0,
@@ -60,7 +57,6 @@ export default function TestingInterface() {
     weatherValue: 0
   });
   
-  // Account balances
   const [balances, setBalances] = useState({
     farmer1: { usdcBalance: 0, policyTokens: 0, shares: 0 },
     farmer2: { usdcBalance: 0, policyTokens: 0, shares: 0 },
@@ -78,11 +74,9 @@ export default function TestingInterface() {
       setLoading(true);
       addLog('🔌 Connecting to deployed contracts...', 'info');
 
-      // Create local provider
       const localProvider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
       setProvider(localProvider);
 
-      // Read deployment info (you'll need to run the deploy script first)
       let deploymentInfo;
       try {
         const response = await fetch('/deployment-info.json');
@@ -93,7 +87,6 @@ export default function TestingInterface() {
         throw new Error('Deployment info not found. Run: npx hardhat run scripts/deploy-for-testing.js --network localhost');
       }
 
-      // Get signers using the deployed account addresses
       const owner = await localProvider.getSigner(deploymentInfo.accounts.owner);
       const farmer1 = await localProvider.getSigner(deploymentInfo.accounts.farmer1);
       const farmer2 = await localProvider.getSigner(deploymentInfo.accounts.farmer2);
@@ -103,7 +96,6 @@ export default function TestingInterface() {
       setAccounts({ owner, farmer1, farmer2, investor1, investor2 });
       addLog('✅ Connected to local Hardhat network', 'success');
 
-      // Connect to deployed contracts
       const mockUSDC = new ethers.Contract(
         deploymentInfo.contracts.MockUSDC,
         MOCK_USDC_ABI,
@@ -141,7 +133,6 @@ export default function TestingInterface() {
     if (!contracts.rainyDayFund) return;
 
     try {
-      // Get contract state
       const seasonId = await contracts.rainyDayFund.currentSeasonId();
       const seasonState = await contracts.rainyDayFund.getSeasonState();
       const seasonInfo = await contracts.rainyDayFund.seasonPolicies(seasonId);
@@ -158,11 +149,9 @@ export default function TestingInterface() {
         weatherValue: Number(weatherData.weather)
       });
 
-      // Get policy token contract
       const policyTokenAddress = seasonInfo.policyToken;
       const policyToken = new ethers.Contract(policyTokenAddress, SEASON_POLICY_TOKEN_ABI, provider);
 
-      // Update balances
       const newBalances = {};
       for (const [key, signer] of Object.entries(accounts)) {
         if (key === 'owner') continue;
@@ -571,7 +560,6 @@ export default function TestingInterface() {
   );
 }
 
-// Settings icon component
 const Settings = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
