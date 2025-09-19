@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import { AlertCircle, Users, TrendingUp, CloudRain, Sun, Clock, DollarSign } from 'lucide-react';
 
