@@ -118,7 +118,11 @@ export default function TestingInterface() {
       
       setContracts({ mockUSDC, mockWeatherOracle, rainyDayFund });
       setDeployed(true);
-      await updateAllData();
+      
+      // Wait a bit for state to update, then load data
+      setTimeout(async () => {
+        await updateAllDataWithContracts(mockUSDC, rainyDayFund, { owner, farmer1, farmer2, investor1, investor2 }, localProvider);
+      }, 100);
       
       addLog('🎉 Ready for testing!', 'success');
     } catch (error) {
@@ -131,13 +135,18 @@ export default function TestingInterface() {
 
   const updateAllData = async () => {
     if (!contracts.rainyDayFund) return;
+    await updateAllDataWithContracts(contracts.mockUSDC, contracts.rainyDayFund, accounts, provider);
+  };
+
+  const updateAllDataWithContracts = async (mockUSDC, rainyDayFund, accountsObj, providerObj) => {
+    if (!rainyDayFund || !mockUSDC || !accountsObj || !providerObj) return;
 
     try {
-      const seasonId = await contracts.rainyDayFund.currentSeasonId();
-      const seasonState = await contracts.rainyDayFund.getSeasonState();
-      const seasonInfo = await contracts.rainyDayFund.seasonPolicies(seasonId);
-      const totalAssets = await contracts.rainyDayFund.totalAssets();
-      const weatherData = await contracts.rainyDayFund.getWeatherData();
+      const seasonId = await rainyDayFund.currentSeasonId();
+      const seasonState = await rainyDayFund.getSeasonState();
+      const seasonInfo = await rainyDayFund.seasonPolicies(seasonId);
+      const totalAssets = await rainyDayFund.totalAssets();
+      const weatherData = await rainyDayFund.getWeatherData();
 
       setContractState({
         currentSeasonId: Number(seasonId),
@@ -150,15 +159,15 @@ export default function TestingInterface() {
       });
 
       const policyTokenAddress = seasonInfo.policyToken;
-      const policyToken = new ethers.Contract(policyTokenAddress, SEASON_POLICY_TOKEN_ABI, provider);
+      const policyToken = new ethers.Contract(policyTokenAddress, SEASON_POLICY_TOKEN_ABI, providerObj);
 
       const newBalances = {};
-      for (const [key, signer] of Object.entries(accounts)) {
+      for (const [key, signer] of Object.entries(accountsObj)) {
         if (key === 'owner') continue;
         
-        const usdcBalance = await contracts.mockUSDC.balanceOf(signer.address);
+        const usdcBalance = await mockUSDC.balanceOf(signer.address);
         const policyTokens = await policyToken.balanceOf(signer.address);
-        const shares = await contracts.rainyDayFund.balanceOf(signer.address);
+        const shares = await rainyDayFund.balanceOf(signer.address);
 
         newBalances[key] = {
           usdcBalance: Number(ethers.formatUnits(usdcBalance, 6)),
@@ -167,9 +176,11 @@ export default function TestingInterface() {
         };
       }
       setBalances(newBalances);
+      addLog('✅ Data updated successfully', 'info');
 
     } catch (error) {
       console.error('Error updating data:', error);
+      addLog(`❌ Error updating data: ${error.message}`, 'error');
     }
   };
 
