@@ -340,14 +340,14 @@ export default function TestingInterface() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setWeather(5)}
-                  disabled={loading}
+                  disabled={loading || (contractState.seasonState !== 0 && contractState.seasonState !== 1)}
                   className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm disabled:opacity-50"
                 >
                   Bad (5)
                 </button>
                 <button
                   onClick={() => setWeather(15)}
-                  disabled={loading}
+                  disabled={loading || (contractState.seasonState !== 0 && contractState.seasonState !== 1)}
                   className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm disabled:opacity-50"
                 >
                   Good (15)
