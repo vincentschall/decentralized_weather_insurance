@@ -1,0 +1,19 @@
+# LaTeX auxiliary files (common)
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.xdv
+
+# Local build dir (where we put aux files)
+docs/build/
