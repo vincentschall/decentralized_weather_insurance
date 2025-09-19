@@ -36,7 +36,7 @@ const SEASON_POLICY_TOKEN_ABI = [
   "function balanceOf(address owner) view returns (uint256)"
 ];
 
-const seasonStateNames = ['ACTIVE', 'CLAIM', 'WITHDRAW', 'FINISHED'];
+const seasonStateNames = ['ACTIVE', 'INACTIVE', 'CLAIM', 'WITHDRAW', 'FINISHED'];
 
 export default function TestingInterface() {
   const [deployed, setDeployed] = useState(false);
@@ -356,22 +356,24 @@ export default function TestingInterface() {
             </div>
 
             {/* Phase Control */}
-            <div className="mb-6">
-              <h3 className="font-semibold mb-2 flex items-center">
-                <Clock className="w-4 h-4 mr-1" />
-                Phase Control
-              </h3>
-              <button
-                onClick={advancePhase}
-                disabled={loading}
-                className="w-full py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-              >
-                Advance to Next Phase
-              </button>
-            </div>
+            {contractState.seasonState !== 4 && (
+              <div className="mb-6">
+                <h3 className="font-semibold mb-2 flex items-center">
+                  <Clock className="w-4 h-4 mr-1" />
+                  Phase Control
+                </h3>
+                <button
+                  onClick={advancePhase}
+                  disabled={loading}
+                  className="w-full py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                >
+                  Advance to Next Phase
+                </button>
+              </div>
+            )}
 
             {/* Season Control */}
-            {contractState.seasonState === 3 && (
+            {contractState.seasonState === 4 && (
               <div className="mb-4">
                 <button
                   onClick={startNewSeason}
@@ -400,8 +402,9 @@ export default function TestingInterface() {
                 <span className="font-semibold">Phase:</span>
                 <span className={`px-2 py-1 rounded text-sm ${
                   contractState.seasonState === 0 ? 'bg-green-100 text-green-800' :
-                  contractState.seasonState === 1 ? 'bg-yellow-100 text-yellow-800' :
-                  contractState.seasonState === 2 ? 'bg-blue-100 text-blue-800' :
+                  contractState.seasonState === 1 ? 'bg-orange-100 text-orange-800' :
+                  contractState.seasonState === 2 ? 'bg-yellow-100 text-yellow-800' :
+                  contractState.seasonState === 3 ? 'bg-blue-100 text-blue-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
                   {seasonStateNames[contractState.seasonState]}
@@ -488,7 +491,7 @@ export default function TestingInterface() {
                     </div>
                   )}
                   
-                  {contractState.seasonState === 1 && balances[farmerKey]?.policyTokens > 0 && (
+                  {contractState.seasonState === 2 && balances[farmerKey]?.policyTokens > 0 && (
                     <button
                       onClick={() => claimPolicies(farmerKey)}
                       disabled={loading}
@@ -524,24 +527,26 @@ export default function TestingInterface() {
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => invest(investorKey, 100)}
-                      disabled={loading}
-                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      Invest 100
-                    </button>
-                    <button
-                      onClick={() => invest(investorKey, 500)}
-                      disabled={loading}
-                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      Invest 500
-                    </button>
-                  </div>
+                  {(contractState.seasonState === 0 || contractState.seasonState === 1) && (
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => invest(investorKey, 100)}
+                        disabled={loading}
+                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        Invest 100
+                      </button>
+                      <button
+                        onClick={() => invest(investorKey, 500)}
+                        disabled={loading}
+                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        Invest 500
+                      </button>
+                    </div>
+                  )}
                   
-                  {contractState.seasonState === 2 && balances[investorKey]?.shares > 0 && (
+                  {contractState.seasonState === 3 && balances[investorKey]?.shares > 0 && (
                     <button
                       onClick={() => withdraw(investorKey)}
                       disabled={loading}
