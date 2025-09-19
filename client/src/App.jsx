@@ -296,11 +296,7 @@ export default function TestingInterface() {
 			<h1 className="text-4xl font-extrabold mb-2 text-white">
 			RainyDayFund Testing Interface
 			</h1>
-			<p className="text-white text-lg mb-8">
-			Real Solidity contract testing environment
-			</p>
 			</div>
-
 			<div className="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full">
 			<div className="text-center">
 			<AlertCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
