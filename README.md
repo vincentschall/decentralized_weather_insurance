@@ -8,6 +8,8 @@ Group project (09/2025): EVM-based smart contract with react app for the blockch
 
 ## Quick startup guide
 
+If this is your first run, go into /client and run `npm install`. Then do the same in the /contract folder. This will install all of the used dependencies.
+
 **OPTION 1 (manual):**  
   - Navigate into /contract and run `npx hardhat node` to start your local blockchain.
   - In a new terminal, go into /contract again and run `npx hardhat run /scripts/deploy-for-testing.js --network localhost`. This deploys the contracts onto your local chain.
