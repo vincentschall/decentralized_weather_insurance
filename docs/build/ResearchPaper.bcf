@@ -2367,10 +2367,35 @@
     <bcf:citekey order="3" intorder="1">IUCN2021</bcf:citekey>
     <bcf:citekey order="3" intorder="2">NDMA2021</bcf:citekey>
     <bcf:citekey order="3" intorder="3">UNEPDHI2021</bcf:citekey>
-    <bcf:citekey order="4" intorder="1">GoK2017</bcf:citekey>
-    <bcf:citekey order="5" intorder="1">WairimuND</bcf:citekey>
-    <bcf:citekey order="6" intorder="1">Dominguez2024</bcf:citekey>
-    <bcf:citekey order="6" intorder="2">Shetty2022</bcf:citekey>
+    <bcf:citekey order="4" intorder="1">TheStar2024</bcf:citekey>
+    <bcf:citekey order="4" intorder="2">NDMA2024</bcf:citekey>
+    <bcf:citekey order="5" intorder="1">GoK2017</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">WairimuND</bcf:citekey>
+    <bcf:citekey order="7" intorder="1">OCHA2023</bcf:citekey>
+    <bcf:citekey order="7" intorder="2">TheStar2024</bcf:citekey>
+    <bcf:citekey order="8" intorder="1">WorldBank2024</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">Dominguez2024</bcf:citekey>
+    <bcf:citekey order="10" intorder="1">Chainlink2021</bcf:citekey>
+    <bcf:citekey order="11" intorder="1">Dominguez2024</bcf:citekey>
+    <bcf:citekey order="12" intorder="1">WorldBank2022</bcf:citekey>
+    <bcf:citekey order="13" intorder="1">Baagoe2020</bcf:citekey>
+    <bcf:citekey order="13" intorder="2">Sibiko2018</bcf:citekey>
+    <bcf:citekey order="14" intorder="1">Janzen2020</bcf:citekey>
+    <bcf:citekey order="15" intorder="1">Jensen2016</bcf:citekey>
+    <bcf:citekey order="16" intorder="1">Dominguez2024</bcf:citekey>
+    <bcf:citekey order="16" intorder="2">Shetty2022</bcf:citekey>
+    <bcf:citekey order="17" intorder="1">IUCN2021</bcf:citekey>
+    <bcf:citekey order="17" intorder="2">UNEPDHI2021</bcf:citekey>
+    <bcf:citekey order="18" intorder="1">GoK2017</bcf:citekey>
+    <bcf:citekey order="19" intorder="1">FAO2024b</bcf:citekey>
+    <bcf:citekey order="19" intorder="2">MoA2023</bcf:citekey>
+    <bcf:citekey order="20" intorder="1">Artemis2017</bcf:citekey>
+    <bcf:citekey order="20" intorder="2">BASIS2017</bcf:citekey>
+    <bcf:citekey order="21" intorder="1">AfricanClimate2024</bcf:citekey>
+    <bcf:citekey order="21" intorder="2">MoA2023</bcf:citekey>
+    <bcf:citekey order="22" intorder="1">WorldBank2022</bcf:citekey>
+    <bcf:citekey order="23" intorder="1">Oxford2017</bcf:citekey>
+    <bcf:citekey order="24" intorder="1">ERC1155</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">

@@ -3,14 +3,19 @@
 % ---------- Packages ----------
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}          % Better fonts
-\usepackage{geometry}         % Page margins
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{caption}
 \geometry{margin=1in}
-\usepackage{setspace}         % Line spacing
+\usepackage{setspace}
 \onehalfspacing
-\usepackage{graphicx}         % For figures
-\usepackage{hyperref}         % Clickable references
-\usepackage{csquotes}         % Required for biblatex
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{csquotes}
+\usepackage{enumerate}
+\usepackage{xcolor}
 \usepackage[style=authoryear,maxcitenames=2,backend=biber]{biblatex}
 
 % ---------- Bibliography file ----------
@@ -19,10 +24,26 @@
 % ---------- Title ----------
 \title{\textbf{The Rainy-Day Fund: Decentralized Parametric Insurance for Smallholder Farmers in Kenya}}
 \author{
-    Group A: Ellena, Sabina, Noah, Vincent\\
+    Group A: Ellena, Sabina, Noah, Vincent\\[0.5em]
     \textit{University of Basel, Blockchain Challenge 25}
 }
 \date{\today}
+
+% ---------- Section formatting and ToC ----------
+\usepackage{titlesec}
+\usepackage{tocloft}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+\titleformat{\section}
+  {\Large\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{2.0ex plus .2ex minus .2ex}{1.0ex plus .2ex}
+\titleformat{\subsection}
+  {\large\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{1.5ex plus .2ex minus .2ex}{0.8ex plus .2ex}
+\renewcommand{\cftsecfont}{\normalfont}
+\renewcommand{\cftsubsecfont}{\normalfont}
+\renewcommand{\cftsecpagefont}{\normalfont}
+\setlength{\cftbeforesecskip}{4pt}
 
 \begin{document}
     \maketitle
@@ -30,16 +51,25 @@
     \begin{abstract}
         Smallholder farmers in Kenya face serious challenges due to climate variability, as more than 98\% of agriculture depends on rain-fed systems and much of the country’s arable land lies in arid and semi-arid regions (ASALs).
         Frequent droughts, unpredictable rainfall, and extreme weather events have reduced crop yields, threatened food security, and put rural livelihoods at risk.
-        Traditional risk mitigation strategies remain insufficient, while irrigation development is limited due to infrastructural and environmental constraints.
+        Traditional risk mitigation strategies, including crop diversification and off-farm income, remain insufficient, while irrigation development is limited due to infrastructural and environmental constraints.
         Weather index insurance (WII) has emerged as a practical solution because it provides affordable, quick, and reliable payouts based on objective weather data, while reducing administrative costs and moral hazard.
         Building on this idea, the Rainy-Day Fund introduces a decentralized, blockchain-based parametric insurance system.
         By using smart contracts and mobile payment platforms, it can deliver timely payouts to farmers, strengthen their resilience, and help them reinvest in their farms.
+        This approach not only protects farmers from the financial shocks of extreme weather but also offers a transparent and efficient way to support sustainable agricultural livelihoods.
     \end{abstract}
 
-    \textbf{Keywords:} Smallholder farmers; Kenya; climate change; weather index insurance; parametric insurance; blockchain; agricultural resilience; arid and semi-arid lands.
+    \noindent\textbf{Keywords:} Smallholder farmers; Kenya; climate change; weather index insurance; parametric insurance; blockchain; agricultural resilience; arid and semi-arid lands.
 
-% ---------- Sections ----------
-    \section*{Introduction}
+    % Table of Contents
+    \tableofcontents
+    \bigskip
+
+    % 1 Introduction and Motivation
+    \section{Introduction and Motivation}\label{sec:intro}
+    The goal of the Rainy Day Fund is to design a decentralized parametric insurance solution that can provide smallholder farmers with affordable, fast, and trustworthy protection against climate-related risks.
+    By leveraging blockchain technology, the project seeks to overcome mistrust, high administrative costs, and inefficiencies that have limited adoption of weather index insurance.
+    The motivation lies in addressing urgent climate vulnerabilities, reducing poverty traps, and creating scalable financial safety nets in one of the world’s most underserved insurance markets.
+
     Agriculture is the backbone of Kenya’s economy, contributing approximately 21.3\% to the country’s GDP in 2024~\parencite{WorldBank2024}.
     It is the largest employer in the country, providing livelihoods for over 40\% of the total population and more than 70\% of the rural population~\parencite{FAO2024}.
     Smallholder farmers form the majority of agricultural producers, yet they remain highly vulnerable to climate variability.
@@ -47,44 +77,121 @@
     Kenya’s Arid and Semi-Arid Lands (ASALs) cover more than 80\% of the country, host over 70\% of livestock, and are home to around 36\% of the population~\parencite{IUCN2021,NDMA2021,UNEPDHI2021}.
     Farmers in these regions depend almost entirely on rain-fed crops and livestock, making them extremely vulnerable to droughts and erratic rainfall.
 
-    \section*{Problem Analysis}
+    The drought between 2020 and 2023, the worst in four decades, illustrates the severity of this risk: yields declined by up to 70\%, 2.6 million livestock were lost, and 4.4 million people required urgent food assistance~\parencite{TheStar2024,NDMA2024}.
+    These shocks highlight the fragility of rural livelihoods and the absence of effective financial safety nets to protect farmers.
+
+    Our guiding research question is: \emph{How can blockchain-based weather insurance provide affordable, transparent, and automatic protection for rural farmers in Africa who are exposed to increasing climate risks?}
+
+    % 1.1 Problem Analysis
+    \subsection{Problem Analysis}\label{subsec:problem-analysis}
     Smallholder farmers in Kenya are uniquely vulnerable to climate risks.
     About 98\% of Kenya’s agricultural systems are rain-fed~\parencite{GoK2017}, while irrigation development is limited due to infrastructural and environmental constraints~\parencite{WairimuND}.
-    Traditional coping strategies such as crop diversification, off-farm work, and borrowing are insufficient to withstand the growing severity of climate shocks. \ldots
+    Traditional coping strategies such as crop diversification, off-farm work, and borrowing are insufficient to withstand the growing severity of climate shocks.
+    As a result, households often fall into poverty traps, selling livestock or assets after droughts and struggling to recover in subsequent seasons.
+    The recent 2020--2023 drought, the worst in four decades, illustrates the magnitude of the challenge: in some regions, crop yields dropped by up to 70\%, more than 2.6 million livestock died, and 4.4 million people required urgent food assistance~\parencite{OCHA2023,TheStar2024}.
+    These shocks do not only affect farmers individually but also ripple across Kenya’s economy, since agriculture contributes over 20\% of national GDP and supports the majority of rural livelihoods~\parencite{WorldBank2024}.
 
-    \section*{Benefits of Blockchain in Insurance}
-    Blockchain technology, with its decentralized ledger and automated smart contracts, is particularly well-suited for microinsurance solutions targeting smallholder farmers \parencite{Dominguez2024,Shetty2022}.
-    By eliminating intermediaries, automating claims, and ensuring transparency, blockchain can reduce operational costs, increase trust, and make insurance accessible even in remote areas. \ldots
+    Conventional agricultural insurance is largely absent in Kenya, and where it does exist, it suffers from deep structural weaknesses.
+    High administrative costs make premiums unaffordable for smallholder farmers~\parencite{Dominguez2024}.
+    Claims processing is slow and heavily manual, which delays payouts and exacerbates farmers’ financial vulnerability during shocks~\parencite{Chainlink2021}.
+    A lack of transparency around pricing and claims fosters widespread mistrust~\parencite{Dominguez2024}.
+    Moreover, coverage remains minimal: in Sub-Saharan Africa, fewer than 3\% of farmers are insured, leaving more than 97\% unprotected~\parencite{WorldBank2022}.
 
-    \section*{Target Market \& Stakeholders}
+    Weather Index Insurance (WII) has emerged as a potential tool to address these challenges, because it relies on measurable weather data such as rainfall or temperature thresholds to trigger payouts.
+    This reduces delays, administrative costs, and moral hazard compared to traditional indemnity-based insurance~\parencite{Baagoe2020,Sibiko2018}.
+    Studies show that WII adoption can reduce poverty, improve household welfare, and encourage investment in improved seeds and fertilizers.
+    Yet despite this potential, uptake remains very limited.
+    Farmers often lack awareness or financial literacy, making WII appear too complex~\parencite{Janzen2020}.
+    Basis risk remains a major concern, as mismatches between weather station data and on-farm realities can result in payouts that do not reflect actual losses, undermining trust~\parencite{Jensen2016}.
+    Affordability is another barrier, since many farmers lack liquidity at the beginning of the planting season, precisely when premiums are due.
+
+    % 1.2 Benefits of Blockchain in Insurance
+    \subsection{Benefits of Blockchain in Insurance}\label{subsec:blockchain-benefits}
+    Blockchain technology, with its decentralized ledger and automated smart contracts, is particularly well-suited for microinsurance solutions targeting smallholder farmers.
+    By eliminating intermediaries, automating claims, and ensuring transparency, blockchain can reduce operational costs, increase trust, and make insurance accessible even in remote areas~\parencite{Dominguez2024,Shetty2022}.
+    Moreover, parametric microinsurance, where payouts are triggered by measurable weather events, benefits from blockchain’s immutable and auditable infrastructure, ensuring rapid and verifiable payments. \ldots
+
+    % 2 Business Model and Perspective
+    \section{Business Model and Perspective}\label{sec:business-model}
+    Smallholder farmers in Kenya, particularly those living in the Arid and Semi-Arid Lands (ASALs), represent the primary target market for decentralized parametric insurance.
+    These regions cover more than 80\% of the country’s land area, host over 70\% of the livestock population, and are home to roughly 36\% of the national population~\parencite{IUCN2021,UNEPDHI2021}.
+    With more than 98\% of agriculture dependent on rain-fed systems, smallholder farmers are disproportionately exposed to climate variability and shocks~\parencite{GoK2017}.
+    Agriculture employs around 40\% of Kenya’s total population and over 70\% of the rural population, yet fewer than 1\% of farmers currently purchase agricultural insurance, leaving the vast majority unprotected~\parencite{FAO2024b,MoA2023}.
+
+    % 2.1 Target Market
+    \subsection{Target Market}\label{subsec:target-market}
+    The stakeholders in Kenya’s agricultural insurance ecosystem are diverse and interdependent.
+    Farmers are the primary end-users.
+    Insurers and micro-insurers underwrite and distribute weather-index products, while global reinsurers provide the capital buffers needed to make large-scale coverage feasible~\parencite{Artemis2017,BASIS2017}.
+    The Government of Kenya, through its National Agricultural Insurance Policy (NAIP), and regulatory agencies play a critical role in shaping policy and supervising products~\parencite{AfricanClimate2024,MoA2023}.
+    International donors and development partners fund pilots, subsidize premiums, and provide technical assistance, as seen in the Kenya Livestock Insurance Program (KLIP)~\parencite{WorldBank2022}.
+    Mobile money providers such as Safaricom’s M-Pesa enable efficient premium collection and direct payouts\parencite{Oxford2017}.
+
+    % 2.2 High-Level Concept
+    \subsection{High-Level Concept}\label{subsec:high-level-concept}
     \ldots
 
-    \section*{High-Level Concept}
+    % 3 Implementation
+    \section{Implementation}\label{sec:implementation}
+    Overview of implementation goals.
+
+    % 3.1 Implementation Strategy
+    \subsection{Implementation Strategy}\label{subsec:implementation-strategy}
     \ldots
 
-    \section*{Macro Architecture}
+    % 3.2 Macro Architecture
+    \subsection{Macro Architecture}\label{subsec:macro-architecture}
     \ldots
 
-    \section*{Implementation Strategy}
+    % 3.3 Micro Architecture / Technical Design
+    \subsection{Micro Architecture / Technical Design}\label{subsec:micro-architecture}
+    The project is built around a Solidity smart contract using the Ethereum Virtual Machine.
+    This central RainyDayFund contract can be called using the front end and holds all the exposed functionality for the consumer.
+    Investors use the \texttt{invest()} and \texttt{withdraw()} methods while insurees can buy and claim their policies in batches using the \texttt{buyPolicy()} and \texttt{claimPolicies()} functions. \ldots
+
+    As shown in Figure~\ref{fig:initial-contract-design}, the initial contract made use of the \texttt{1155 token standard} for the \texttt{policyTokens}, to take advantage of the cost-efficient batch operations~\parencite{ERC1155}.
+    To help with testing the (Mock)-MUSCD was created, implementing the ERC20 interface, to emulate the behavior of common stablecoins like USDC, which are used as payment and funding for the riskpool.
+    This allowed for the free minting and full control over the coins and made testing the functionality of the main contract possible, even within the bounds of Remix VM .
+    Therefore, testing was quicker and easier at the beginning, without the need to always deploy on the Sepolia Testnet or an immediate, complete setup, for example with hardhat.
+
+    Initially there were multiple issues:
+    \begin{enumerate}[1]
+        \item \textbf{Mapping for storing addresses:} Initially we used a mapping to store who had bought policies and was thereby eligible to claim them.
+        However, there were some issues with this: Firstly, the policies lost all their value when they were resold, because the address of the new owner would not be tracked in the mapping.
+        Moreover, storing all of this data was very gas-inefficient and redundant, because ownership of the policyToken is proof of ownership for the policy.
+        \item \textbf{No proper incentive for investors:} We had already planned to give the investors some incentive to keep their funds in the riskpool, even after the season would end, to increase liquidity for the next season.
+        The idea to achieve this, was, to use compound interest or create some other form of yield over time.
+        However, implementing this with the initial setup proved difficult and created vastly unfair results \textcolor{red}{Hier vllt nochmal genauer erkl\"aren}
+        \item \textbf{Weather oracle:} The initial mock-up for the weather oracle was just a number that could be accessed and stored on the contract directly, as an initial mock-up for testing purposes.
+        Nevertheless, this was far from the goal of using chainlink as a decentralized oracle to reliably and transparently access the data.
+        \item \textbf{Attack vectors:} Lastly there were some attack-vectors, especially for the owner.
+        The \texttt{startNewSeason()} function could be used at any point during the season, thus rendering unclaimed policyTokens worthless and not allowing for investment-withdrawals to be made.
+    \end{enumerate}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.5]{graphics/ClassDiagram_Old}
+        \caption{Initial Contract Design \\ \textit{Source: Author's own.}}
+        \label{fig:initial-contract-design}
+    \end{figure}
+
+    % 3.4 Challenges and Risk Mitigation
+    \subsection{Challenges and Risk Mitigation}\label{subsec:challenges}
     \ldots
 
-    \section*{Micro Architecture / Technical Design}
+    % 3.5 Outlook and Next Steps
+    \subsection{Outlook and Next Steps}\label{subsec:outlook}
     \ldots
 
-    \section*{Challenges \& Risk Mitigation}
-    \ldots
-
-    \section*{Outlook \& Next Steps}
-    \ldots
-
-    \section*{Conclusion}
+    % 4 Conclusion
+    \section{Conclusion}\label{sec:conclusion}
     \ldots
 
 % ---------- Bibliography ----------
     \printbibliography
 
     \appendix
-    \section*{Appendices}
+    \section*{Appendices}\label{sec:appendix}
     Add any supplementary material here.
 
 \end{document}
