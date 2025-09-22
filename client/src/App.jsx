@@ -336,7 +336,7 @@ export default function TestingInterface() {
 		{/* Weather Control */}
 		<div className="mb-6">
 		<h3 className="font-semibold mb-2 flex items-center">
-		{contractState.weatherValue < 10 ? <CloudRain className="w-4 h-4 mr-1" /> : <Sun className="w-4 h-4 mr-1" />}
+		{contractState.weatherValue < 10 ? <Sun className="w-4 h-4 mr-1" /> : <CloudRain className="w-4 h-4 mr-1" />}
 		Weather: {contractState.weatherValue} {contractState.weatherValue < 10 ? '(Bad)' : '(Good)'}
 		</h3>
 		<div className="flex gap-2">
