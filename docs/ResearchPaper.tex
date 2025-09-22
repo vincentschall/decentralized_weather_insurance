@@ -145,7 +145,10 @@
     The strategy for the implementation was largely based on a learning process.
     At first the focus was mainly on exploring the basics of Solidity based Smart Contracts and creating an early working prototype.
     Once this was achieved the focus shifted to code quality, finding efficient and well established solutions to tackle current challenges and at the end, integrating all of this into an easy-to-use UI .
+
+
     The most important guidelines and ideas for the implementation were:
+
     \begin{enumerate}[1]
         \item \textbf{Division of Work:} The work was divided mostly into two parts.
         One part was the overarching architecture and product design, including specifically the smart contract development using Solidity as well as researching existing libraries and standards to implement and use.
@@ -153,19 +156,66 @@
         This division was important for numerous reasons, but especially because it allowed for mutual verification and simultaneously the possibility to truly focus on specific topics.
         \item \textbf{Testing Setup:} The Testing-Setup within Hardhat and using Node.js made finding bugs and testing after changes much more efficient and also allows for neat and compact showcases of the features and working prototype code.
         An excerpt from this testing setup and what it shows can be seen in figure~\ref{fig:test-set-up}.
+        \item \textbf{Research:} Research was an important, continuous process throughout the project, for finding technical solutions but also possible issues with the current state of the project.
         \item \textbf{Usage of AI:} AI was used throughout the project for research purposes, when trying to find fitting libraries, tools and standards, as well as making repetitive tasks, like writing test code more efficient.
-        \item \textbf{Research:} Research was a continuous process throughout the project, both for technical solutions and for understanding the insurance and blockchain landscape in Kenya and similar markets.
     \end{enumerate}
+
+    An important challenge was to align technical progress with the economic modeling.
+    Once a working prototype was achieved, communication between these two distinct work streams came into focus.
+    Daily synchronization and change management helped in finding ways to implement the most important parts of the business model, whilst simplifying other parts, like using a mock weather oracle, instead of Chainlink as a source of weather data.
+    The strategy during the development process was to implement based on an objective hierarchy:
+
+    \begin{enumerate}[1]
+        \item Working Smart Contract with deterministic payouts
+        \item Investment logic
+        \item Investor incentive model (yield / compound interest)
+        \item Tests and Code quality
+        \item Working frontend for showcases and manual testing
+        \item \ldots
+    \end{enumerate}
+
+    These are just the most important tasks that are included in the final prototype. For further necessary steps towards a finished product refer to~\ref{subsec:outlook}
 
     % 3.2 System (Macro) Architecture
     \subsection{System (Macro) Architecture}\label{subsec:system-architecture}
-    The macro architecture of the system is centered around the RainyDayFund smart contract, which acts as the core of the decentralized insurance platform. The contract interacts with a frontend built in React, and is designed to be extensible for integration with oracles (such as Chainlink) and other external services. The architecture emphasizes modularity, security, and ease of use for both farmers and investors. The system is structured to allow for future enhancements, such as additional insurance products or integration with real-world weather data providers.
+    The macro architecture of the system is centered around the RainyDayFund smart contract, which acts as the core of the decentralized insurance platform.
+    It is designed to be extensible for integration with oracles (such as Chainlink), \texttt{ERC20 tokens} as payment and is integrated within a frontend built with React.
+    The architecture emphasizes modularity, and ease of use for both farmers and investors, as well as neat and easy testing and showcasing.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.5]{graphics/Architectural_Overview}
+        \caption{Architectural Overview \\ \textit{Source: Author's own.}}
+        \label{fig:architecture}
+    \end{figure}
+    \textcolor{red}{Should we remove the Marketplace altogether? What does it even mean (in the current state?)}
+
+    As shown in figure~\ref{fig:architecture} the users (both farmers and investors) own a crypto wallet and connect this to the frontend.
+    The frontend then allows them to easily invest or buy policies for the current season with their crypto funds, by programmatically interacting with the Smart Contract.
+    The smart contract then mints a policy token for farmers or deposits the investors funds in the vault, so that they can receive a yield.
+    All funds are stored in a Risk-Pool (in our case the ERC4626 vault).
+    The farmers can claim their policies at the end of the season and, if all conditions are met, i.e.\ the weather oracle returns weather data, below the threshold and the farmer making the claim actually owns the policy tokens, receive their coverage funds.
+    Investors may withdraw their funds, receiving all the accumulated yield.
+
+    The season itself has 5 phases:
+    \begin{enumerate}
+        \item \textbf{Active Phase:} In the active phase policies can be bought and investments can be made.
+        The premium for the current season is already set at the beginning through the auction-based system explained in section~\ref{sec:business-model} \textcolor{red}{check wether this links correctly!}.
+        No claims or withdrawals can be made during this phase.
+        \item \textbf{Inactive Phase:} Now the policies can no longer be bought, but investments can still be made.
+        This allows for a speculative market for the insurance policies, while keeping the possibility of introducing more liquidity from capital investors.
+        \item \textbf{Claim Phase:} The claim phase starts upon the actual crop season ending.
+        Farmers may now try to claim their policies and receive their coverage payouts, while investors have to wait until this phase is over.
+        \item \textbf{Withdrawal Phase:} Now investors may choose to withdraw their capital and receive their yield, while farmers wait until the next season is started.
+        \item \textbf{Finished Phase:} The season is over, unclaimed policies are now invalid and not-withdrawn investments are used as liquidity for the next season, earning yield on the current investment (including the earned yield), creating a compounding effect.
+    \end{enumerate}
 
     % 3.3 Smart Contract Design (Micro)
     \subsection{Smart Contract Design (Micro)}\label{subsec:smart-contract-design}
     The project is built around a Solidity smart contract using the Ethereum Virtual Machine.
     This central RainyDayFund contract can be called using the front end and holds all the exposed functionality for the consumer.
-    Investors use the \texttt{invest()} and \texttt{withdraw()} methods while insurees can buy and claim their policies in batches using the \texttt{buyPolicy()} and \texttt{claimPolicies()} functions. The contract leverages the ERC1155 token standard for policy tokens, enabling efficient batch operations and flexible policy management.
+    Investors use the \texttt{invest()} and \texttt{withdraw()} methods while insurees can buy and claim their policies in batches using the \texttt{buyPolicy()} and \texttt{claimPolicies()} functions.
+    The contract leverages the ERC1155 token standard for policy tokens, enabling efficient batch operations and flexible policy management.
 
     As shown in Figure~\ref{fig:initial-contract-design}, the initial contract made use of the \texttt{1155 token standard} for the \texttt{policyTokens}, to take advantage of the cost-efficient batch operations~\parencite{ERC1155}.
     To help with testing the (Mock)-MUSCD was created, implementing the ERC20 interface, to emulate the behavior of common stablecoins like USDC, which are used as payment and funding for the riskpool.
@@ -193,9 +243,13 @@
         \label{fig:initial-contract-design}
     \end{figure}
 
+    // Solving of issues -> explain new structure
+
     % 3.4 Tooling & DevOps Pipeline
     \subsection{Tooling \& DevOps Pipeline}\label{subsec:tooling-devops}
-    The development process utilized a modern toolchain centered around Hardhat for smart contract development and testing, Node.js for scripting, and React for the frontend. Continuous integration and version control were managed via GitHub, with automated testing and linting to ensure code quality. The test setup, as shown in Figure~\ref{fig:test-set-up}, highlights the importance of robust testing and code coverage in the project.
+    The development process utilized a modern toolchain centered around Hardhat for smart contract development and testing, Node.js for scripting, and React for the frontend.
+    Continuous integration and version control were managed via GitHub, with automated testing and linting to ensure code quality.
+    The test setup, as shown in Figure~\ref{fig:test-set-up}, highlights the importance of robust testing and code coverage in the project.
 
     \begin{figure}[H]
         \centering
@@ -216,15 +270,33 @@
 
     % 3.5 Testing & Quality Assurance
     \subsection{Testing \& Quality Assurance}\label{subsec:testing-qa}
-    Testing was a critical component of the implementation. The project employed unit tests, integration tests, and code coverage analysis to ensure the reliability and correctness of the smart contracts. Automated tests were run frequently during development to catch regressions early and to validate new features. The use of Hardhat and related plugins facilitated a comprehensive and efficient testing workflow.
+    Testing was a critical component of the implementation.
+    The project employed unit tests, integration tests, and code coverage analysis to ensure the reliability and correctness of the smart contracts.
+    Automated tests were run frequently during development to catch regressions early and to validate new features.
+    The use of Hardhat and related plugins facilitated a comprehensive and efficient testing workflow.
 
     % 3.6 Security & Risk Mitigation
     \subsection{Security \& Risk Mitigation}\label{subsec:security-risk}
-    Challenges and risk mitigation were central to the design and implementation of the RainyDayFund contract. Key concerns included preventing unauthorized access, ensuring the integrity of the season lifecycle, and protecting against common smart contract vulnerabilities such as reentrancy and integer overflows. The contract design incorporated best practices such as checks-effects-interactions, use of OpenZeppelin libraries for access control and safe math, and thorough testing of edge cases. Future work will focus on further decentralizing the oracle mechanism and enhancing the robustness of the contract against emerging threats.
+    Challenges and risk mitigation were central to the design and implementation of the RainyDayFund contract.
+    Key concerns included preventing unauthorized access, ensuring the integrity of the season lifecycle, and protecting against common smart contract vulnerabilities such as reentrancy and integer overflows.
+    The contract design incorporated best practices such as checks-effects-interactions, use of OpenZeppelin libraries for access control and safe math, and thorough testing of edge cases.
+    Future work will focus on further decentralizing the oracle mechanism and enhancing the robustness of the contract against emerging threats.
 
     % 3.7 Outlook & Next Steps
     \subsection{Outlook \& Next Steps}\label{subsec:outlook}
-    Looking ahead, the project aims to expand its feature set by integrating real-world weather data via decentralized oracles, introducing more sophisticated investor incentive mechanisms, and exploring scalability solutions such as layer-2 networks. Additional insurance products and partnerships with local organizations are also envisioned to increase the impact and reach of the platform.
+    Looking ahead, the project aims to expand its feature set by integrating real-world weather data via decentralized oracles, introducing more sophisticated investor incentive mechanisms, and exploring scalability solutions such as layer-2 networks.
+    Additional insurance products and partnerships with local organizations are also envisioned to increase the impact and reach of the platform.
+
+     // Maybe include this:
+    For production / next steps:
+    \begin{enumerate}[1]
+        \item Proper CI setup
+        \item Auction Model for price finding
+        \item Chainlink integration
+        \item Fledged out Frontend
+        \item \ldots
+    \end{enumerate}
+
 
     % 4 Conclusion
     \section{Conclusion}\label{sec:conclusion}
