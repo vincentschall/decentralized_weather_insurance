@@ -292,6 +292,9 @@ export default function TestingInterface() {
 	if (!deployed) {
 		return (
 			<div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-500 to-blue-200 px-4">
+			<div className="mb-8">
+				<img src="/logo.jpg" alt="RainyDayFund Logo" className="w-823 h-233 mx-auto rounded-2xl shadow-lg" />
+			</div>
 			<div className="text-center mb-8">
 			<h1 className="text-4xl font-extrabold mb-2 text-white">
 			RainyDayFund Testing Interface
