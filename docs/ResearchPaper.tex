@@ -174,7 +174,8 @@
         \item \ldots
     \end{enumerate}
 
-    These are just the most important tasks that are included in the final prototype. For further necessary steps towards a finished product refer to~\ref{subsec:outlook}
+    These are just the most important tasks that are included in the final prototype.
+    For further necessary steps towards a finished product refer to~\ref{subsec:outlook}.
 
     % 3.2 System (Macro) Architecture
     \subsection{System (Macro) Architecture}\label{subsec:system-architecture}
@@ -184,20 +185,21 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[scale=0.5]{graphics/Architectural_Overview}
+        \includegraphics[scale=0.3]{graphics/Architectural_Overview}
         \caption{Architectural Overview \\ \textit{Source: Author's own.}}
         \label{fig:architecture}
     \end{figure}
-    \textcolor{red}{Should we remove the Marketplace altogether? What does it even mean (in the current state?)}
 
     As shown in figure~\ref{fig:architecture} the users (both farmers and investors) own a crypto wallet and connect this to the frontend.
     The frontend then allows them to easily invest or buy policies for the current season with their crypto funds, by programmatically interacting with the Smart Contract.
     The smart contract then mints a policy token for farmers or deposits the investors funds in the vault, so that they can receive a yield.
     All funds are stored in a Risk-Pool (in our case the ERC4626 vault).
-    The farmers can claim their policies at the end of the season and, if all conditions are met, i.e.\ the weather oracle returns weather data, below the threshold and the farmer making the claim actually owns the policy tokens, receive their coverage funds.
+    The farmers can claim their policies at the end of the season and, if all conditions are met, i.e.\ the weather oracle gets and returns weather data, below the threshold and the farmer making the claim actually owns the policy tokens, receive their coverage funds.
     Investors may withdraw their funds, receiving all the accumulated yield.
+    The \texttt{Payout Engine} symbolizes the possibility of transferring out funds from the crypto wallet to widely used mobile-money services, like M-Pesa.
+    This is already a well established process and not included in the project itself, should however be noted, because it allows the farmers to actually immediately use their payouts in their everyday life.
 
-    The season itself has 5 phases:
+    The concrete timeline for the process is based on the crop season and has 5 phases:
     \begin{enumerate}
         \item \textbf{Active Phase:} In the active phase policies can be bought and investments can be made.
         The premium for the current season is already set at the beginning through the auction-based system explained in section~\ref{sec:business-model} \textcolor{red}{check wether this links correctly!}.
