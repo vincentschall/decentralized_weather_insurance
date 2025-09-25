@@ -2364,39 +2364,73 @@
   <bcf:section number="0">
     <bcf:citekey order="1" intorder="1">WorldBank2024</bcf:citekey>
     <bcf:citekey order="2" intorder="1">FAO2024</bcf:citekey>
-    <bcf:citekey order="3" intorder="1">IUCN2021</bcf:citekey>
+    <bcf:citekey order="3" intorder="1">IUCN</bcf:citekey>
     <bcf:citekey order="3" intorder="2">NDMA2021</bcf:citekey>
-    <bcf:citekey order="3" intorder="3">UNEPDHI2021</bcf:citekey>
+    <bcf:citekey order="3" intorder="3">UNEP-DHI</bcf:citekey>
     <bcf:citekey order="4" intorder="1">TheStar2024</bcf:citekey>
-    <bcf:citekey order="4" intorder="2">NDMA2024</bcf:citekey>
-    <bcf:citekey order="5" intorder="1">GoK2017</bcf:citekey>
-    <bcf:citekey order="6" intorder="1">WairimuND</bcf:citekey>
+    <bcf:citekey order="4" intorder="2">NationalDroughtManagementAuthority2024</bcf:citekey>
+    <bcf:citekey order="5" intorder="1">GovernmentOfKenya2017</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">Wairimu</bcf:citekey>
     <bcf:citekey order="7" intorder="1">OCHA2023</bcf:citekey>
-    <bcf:citekey order="7" intorder="2">TheStar2024</bcf:citekey>
     <bcf:citekey order="8" intorder="1">WorldBank2024</bcf:citekey>
-    <bcf:citekey order="9" intorder="1">Dominguez2024</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">DominguezAnguianoParte2024</bcf:citekey>
     <bcf:citekey order="10" intorder="1">Chainlink2021</bcf:citekey>
-    <bcf:citekey order="11" intorder="1">Dominguez2024</bcf:citekey>
+    <bcf:citekey order="11" intorder="1">DominguezAnguianoParte2024</bcf:citekey>
     <bcf:citekey order="12" intorder="1">WorldBank2022</bcf:citekey>
-    <bcf:citekey order="13" intorder="1">Baagoe2020</bcf:citekey>
+    <bcf:citekey order="13" intorder="1">Jensen2016</bcf:citekey>
     <bcf:citekey order="13" intorder="2">Sibiko2018</bcf:citekey>
     <bcf:citekey order="14" intorder="1">Janzen2020</bcf:citekey>
     <bcf:citekey order="15" intorder="1">Jensen2016</bcf:citekey>
-    <bcf:citekey order="16" intorder="1">Dominguez2024</bcf:citekey>
+    <bcf:citekey order="16" intorder="1">DominguezAnguianoParte2024</bcf:citekey>
     <bcf:citekey order="16" intorder="2">Shetty2022</bcf:citekey>
-    <bcf:citekey order="17" intorder="1">IUCN2021</bcf:citekey>
-    <bcf:citekey order="17" intorder="2">UNEPDHI2021</bcf:citekey>
-    <bcf:citekey order="18" intorder="1">GoK2017</bcf:citekey>
-    <bcf:citekey order="19" intorder="1">FAO2024b</bcf:citekey>
-    <bcf:citekey order="19" intorder="2">MoA2023</bcf:citekey>
-    <bcf:citekey order="20" intorder="1">Artemis2017</bcf:citekey>
-    <bcf:citekey order="20" intorder="2">BASIS2017</bcf:citekey>
-    <bcf:citekey order="21" intorder="1">AfricanClimate2024</bcf:citekey>
-    <bcf:citekey order="21" intorder="2">MoA2023</bcf:citekey>
-    <bcf:citekey order="22" intorder="1">WorldBank2022</bcf:citekey>
-    <bcf:citekey order="23" intorder="1">Oxford2017</bcf:citekey>
-    <bcf:citekey order="24" intorder="1">ERC1155</bcf:citekey>
-    <bcf:citekey order="25" intorder="1">AggregatorV3Interface</bcf:citekey>
+    <bcf:citekey order="17" intorder="1">DominguezAnguianoParte2024</bcf:citekey>
+    <bcf:citekey order="18" intorder="1">Chainlink2021</bcf:citekey>
+    <bcf:citekey order="18" intorder="2">Shetty2022</bcf:citekey>
+    <bcf:citekey order="19" intorder="1">DominguezAnguianoParte2024</bcf:citekey>
+    <bcf:citekey order="20" intorder="1">Chainlink2021</bcf:citekey>
+    <bcf:citekey order="20" intorder="2">Shetty2022</bcf:citekey>
+    <bcf:citekey order="21" intorder="1">Alsdorf2024</bcf:citekey>
+    <bcf:citekey order="21" intorder="2">WorldBank2022</bcf:citekey>
+    <bcf:citekey order="22" intorder="1">Shetty2022</bcf:citekey>
+    <bcf:citekey order="23" intorder="1">Chainlink2021</bcf:citekey>
+    <bcf:citekey order="23" intorder="2">DominguezAnguianoParte2024</bcf:citekey>
+    <bcf:citekey order="24" intorder="1">DominguezAnguianoParte2024</bcf:citekey>
+    <bcf:citekey order="25" intorder="1">Chainlink2021</bcf:citekey>
+    <bcf:citekey order="25" intorder="2">ParametricInsured2025</bcf:citekey>
+    <bcf:citekey order="25" intorder="3">Shetty2022</bcf:citekey>
+    <bcf:citekey order="26" intorder="1">DominguezAnguianoParte2024</bcf:citekey>
+    <bcf:citekey order="26" intorder="2">ResearchGate2023</bcf:citekey>
+    <bcf:citekey order="27" intorder="1">Alsdorf2024</bcf:citekey>
+    <bcf:citekey order="27" intorder="2">DominguezAnguianoParte2024</bcf:citekey>
+    <bcf:citekey order="27" intorder="3">ParametricInsured2025</bcf:citekey>
+    <bcf:citekey order="28" intorder="1">Shetty2022</bcf:citekey>
+    <bcf:citekey order="29" intorder="1">IUCN</bcf:citekey>
+    <bcf:citekey order="29" intorder="2">NDMA2021</bcf:citekey>
+    <bcf:citekey order="29" intorder="3">UNEP-DHI</bcf:citekey>
+    <bcf:citekey order="30" intorder="1">GovernmentOfKenya2017</bcf:citekey>
+    <bcf:citekey order="31" intorder="1">FAO2024</bcf:citekey>
+    <bcf:citekey order="31" intorder="2">MinistryOfAgriculture2023</bcf:citekey>
+    <bcf:citekey order="32" intorder="1">Artemis2017</bcf:citekey>
+    <bcf:citekey order="32" intorder="2">BASIS2017</bcf:citekey>
+    <bcf:citekey order="33" intorder="1">AfricanClimateFoundation2024</bcf:citekey>
+    <bcf:citekey order="33" intorder="2">MinistryOfAgriculture2023</bcf:citekey>
+    <bcf:citekey order="34" intorder="1">Artemis2017</bcf:citekey>
+    <bcf:citekey order="34" intorder="2">WorldBank2022</bcf:citekey>
+    <bcf:citekey order="35" intorder="1">OxfordBusinessGroup2017</bcf:citekey>
+    <bcf:citekey order="36" intorder="1">MinistryOfAgriculture2023</bcf:citekey>
+    <bcf:citekey order="37" intorder="1">ACREAfrica2020</bcf:citekey>
+    <bcf:citekey order="38" intorder="1">WorldBank2022</bcf:citekey>
+    <bcf:citekey order="39" intorder="1">Artemis2017</bcf:citekey>
+    <bcf:citekey order="39" intorder="2">BASIS2017</bcf:citekey>
+    <bcf:citekey order="40" intorder="1">ACREAfrica2024</bcf:citekey>
+    <bcf:citekey order="41" intorder="1">MunichReFoundation2022</bcf:citekey>
+    <bcf:citekey order="41" intorder="2">UNSGSA2023</bcf:citekey>
+    <bcf:citekey order="42" intorder="1">Etherisc2021</bcf:citekey>
+    <bcf:citekey order="43" intorder="1">ADA_OKOFinance2021</bcf:citekey>
+    <bcf:citekey order="44" intorder="1">Jensen2016</bcf:citekey>
+    <bcf:citekey order="45" intorder="1">Janzen2020</bcf:citekey>
+    <bcf:citekey order="46" intorder="1">ERC1155</bcf:citekey>
+    <bcf:citekey order="47" intorder="1">AggregatorV3Interface</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">

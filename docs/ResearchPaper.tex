@@ -16,7 +16,38 @@
 \usepackage{csquotes}
 \usepackage{enumerate}
 \usepackage{xcolor}
+\usepackage{listings}
 \usepackage[style=authoryear,maxcitenames=2,backend=biber]{biblatex}
+
+% ---------- Listings configuration for code highlighting ----------
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+
+\lstdefinestyle{soliditystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single,
+    morekeywords={contract,function,public,private,external,internal,view,pure,returns,return,
+                  address,uint256,uint,int256,int,bool,bytes,string,mapping,struct,enum,
+                  modifier,event,require,assert,revert,if,else,for,while,constructor,
+                  indexed,emit,payable,memory,storage,calldata,immutable}
+}
 
 % ---------- Bibliography file ----------
 \addbibresource{references.bib}
@@ -49,89 +80,152 @@
 	\maketitle
 
 	\begin{abstract}
-		Smallholder farmers in Kenya face serious challenges due to climate variability, as more than 98\% of agriculture depends on rain-fed systems and much of the country’s arable land lies in arid and semi-arid regions (ASALs).
-		Frequent droughts, unpredictable rainfall, and extreme weather events have reduced crop yields, threatened food security, and put rural livelihoods at risk.
-		Traditional risk mitigation strategies, including crop diversification and off-farm income, remain insufficient, while irrigation development is limited due to infrastructural and environmental constraints.
-		Weather index insurance (WII) has emerged as a practical solution because it provides affordable, quick, and reliable payouts based on objective weather data, while reducing administrative costs and moral hazard.
-		Building on this idea, the Rainy-Day Fund introduces a decentralized, blockchain-based parametric insurance system.
-		By using smart contracts and mobile payment platforms, it can deliver timely payouts to farmers, strengthen their resilience, and help them reinvest in their farms.
-		This approach not only protects farmers from the financial shocks of extreme weather but also offers a transparent and efficient way to support sustainable agricultural livelihoods.
-	\end{abstract}
+    Smallholder farmers in Kenya face serious challenges due to climate variability, as more than 98\% of agriculture depends on rain-fed systems and much of the country's arable land lies in arid and semi-arid regions (ASALs).
+    Frequent droughts, unpredictable rainfall, and extreme weather events have reduced crop yields, threatened food security, and put rural livelihoods at risk.
+    Traditional risk mitigation strategies, including crop diversification and off-farm income, remain insufficient, while irrigation development is limited due to infrastructural and environmental constraints.
+    Weather index insurance (WII) has emerged as a practical solution because it provides affordable, quick, and reliable payouts based on objective weather data, while reducing administrative costs and moral hazard.
+    Building on this idea, the Rainy-Day Fund introduces a decentralized, blockchain-based parametric insurance system.
+    By using smart contracts and mobile payment platforms, it can deliver timely payouts to farmers, strengthen their resilience, and help them reinvest in their farms.
+    This approach not only protects farmers from the financial shocks of extreme weather but also offers a transparent and efficient way to support sustainable agricultural livelihoods.
+    \end{abstract}
 
-	\noindent\textbf{Keywords:} Smallholder farmers; Kenya; climate change; weather index insurance; parametric insurance; blockchain; agricultural resilience; arid and semi-arid lands.
+    \textbf{Keywords:} Smallholder farmers, Kenya, climate change, weather index insurance, parametric insurance, blockchain, agricultural resilience, arid and semi-arid lands.
 
-	% Table of Contents
-	\tableofcontents
-	\bigskip
+    % Table of Contents
+    \tableofcontents
+    \bigskip
 
-	% 1 Introduction and Motivation
-	\section{Introduction and Motivation}\label{sec:intro}
-	The goal of the Rainy Day Fund is to design a decentralized parametric insurance solution that can provide smallholder farmers with affordable, fast, and trustworthy protection against climate-related risks.
-	By leveraging blockchain technology, the project seeks to overcome mistrust, high administrative costs, and inefficiencies that have limited adoption of weather index insurance.
-	The motivation lies in addressing urgent climate vulnerabilities, reducing poverty traps, and creating scalable financial safety nets in one of the world’s most underserved insurance markets.
+    \section{Goals and Motivation}\label{sec:goals}
+    The goal of the Rainy Day Fund is to design a decentralized parametric insurance solution that can provide smallholder farmers with affordable, fast, and trustworthy protection against climate-related risks.
+    By leveraging blockchain technology, the project seeks to overcome mistrust, high administrative costs, and inefficiencies that have limited adoption of weather index insurance.
+    The motivation lies in addressing urgent climate vulnerabilities, reducing poverty traps, and creating scalable financial safety nets in one of the world's most underserved insurance markets.
 
-	Agriculture is the backbone of Kenya’s economy, contributing approximately 21.3\% to the country’s GDP in 2024~\parencite{WorldBank2024}.
-	It is the largest employer in the country, providing livelihoods for over 40\% of the total population and more than 70\% of the rural population~\parencite{FAO2024}.
-	Smallholder farmers form the majority of agricultural producers, yet they remain highly vulnerable to climate variability.
+    \section{Introduction}\label{sec:intro}
+    Agriculture is the backbone of Kenya's economy, contributing approximately 21.3\% to the country's GDP in 2024~\parencite{WorldBank2024}.
+    It is the largest employer in the country, providing livelihoods for over 40\% of the total population and more than 70\% of the rural population~\parencite{FAO2024}.
+    Smallholder farmers form the majority of agricultural producers, yet they remain highly vulnerable to climate variability.
 
-	Kenya’s Arid and Semi-Arid Lands (ASALs) cover more than 80\% of the country, host over 70\% of livestock, and are home to around 36\% of the population~\parencite{IUCN2021,NDMA2021,UNEPDHI2021}.
-	Farmers in these regions depend almost entirely on rain-fed crops and livestock, making them extremely vulnerable to droughts and erratic rainfall.
+    Kenya's Arid and Semi-Arid Lands (ASALs) cover about 89\% of the country's land area, host over 70\% of livestock, and are home to around 36\% of the population~\parencite{IUCN, NDMA2021, UNEP-DHI}.
+    Farmers in these regions depend almost entirely on rain-fed crops and livestock, making them extremely vulnerable to droughts and erratic rainfall.
+    The drought between 2020 and 2023, the worst in four decades, illustrates the severity of this risk as farmers faced severe yield losses in many regions, 2.6 million livestock were lost, and 4.4 million people required urgent food assistance~\parencite{TheStar2024, NationalDroughtManagementAuthority2024}.
 
-	The drought between 2020 and 2023, the worst in four decades, illustrates the severity of this risk: yields declined by up to 70\%, 2.6 million livestock were lost, and 4.4 million people required urgent food assistance~\parencite{TheStar2024,NDMA2024}.
-	These shocks highlight the fragility of rural livelihoods and the absence of effective financial safety nets to protect farmers.
+    These shocks highlight the fragility of rural livelihoods and the absence of effective financial safety nets to protect farmers.
+    This paper proposes a decentralized, blockchain-based parametric insurance model as a potential solution to bridge this gap.
+    Our guiding research question is: How can blockchain-based weather insurance provide affordable, transparent, and automatic protection for rural farmers in Africa who are exposed to increasing climate risks?
 
-	Our guiding research question is: \emph{How can blockchain-based weather insurance provide affordable, transparent, and automatic protection for rural farmers in Africa who are exposed to increasing climate risks?}
+    \section{Problem Analysis}\label{sec:problem}
+    Smallholder farmers in Kenya are uniquely vulnerable to climate risks.
+    About 98\% of Kenya's agricultural systems are rain-fed~\parencite{GovernmentOfKenya2017}, while irrigation development is limited due to infrastructural and environmental constraints~\parencite{Wairimu}.
+    Traditional coping strategies such as crop diversification, off-farm work, and borrowing are insufficient to withstand the growing severity of climate shocks.
+    As a result, households often fall into poverty traps, selling livestock or assets after droughts and struggling to recover in later seasons.
+    The drought between 2020 and 2023, considered the worst in four decades, illustrates the magnitude of the challenge as farmers experienced severe yield losses in affected areas, more than 2.6 million livestock died, and about 4.4 million people required urgent food assistance~\parencite{OCHA2023}.
+    These shocks do not only affect farmers individually but also ripple across Kenya's economy, since agriculture contributes over 20\% of national GDP and supports the majority of rural livelihoods~\parencite{WorldBank2024}.
 
-	% 1.1 Problem Analysis
-	\subsection{Problem Analysis}\label{subsec:problem-analysis}
-	Smallholder farmers in Kenya are uniquely vulnerable to climate risks.
-	About 98\% of Kenya’s agricultural systems are rain-fed~\parencite{GoK2017}, while irrigation development is limited due to infrastructural and environmental constraints~\parencite{WairimuND}.
-	Traditional coping strategies such as crop diversification, off-farm work, and borrowing are insufficient to withstand the growing severity of climate shocks.
-	As a result, households often fall into poverty traps, selling livestock or assets after droughts and struggling to recover in subsequent seasons.
-	The recent 2020--2023 drought, the worst in four decades, illustrates the magnitude of the challenge: in some regions, crop yields dropped by up to 70\%, more than 2.6 million livestock died, and 4.4 million people required urgent food assistance~\parencite{OCHA2023,TheStar2024}.
-	These shocks do not only affect farmers individually but also ripple across Kenya’s economy, since agriculture contributes over 20\% of national GDP and supports the majority of rural livelihoods~\parencite{WorldBank2024}.
+    Conventional agricultural insurance is largely absent in Kenya, and where it does exist, it suffers from deep structural weaknesses.
+    High administrative costs make premiums unaffordable for smallholder farmers~\parencite{DominguezAnguianoParte2024}.
+    Claims are processed slowly and often manually, which delays payouts and worsens farmers' financial stress during crises~\parencite{Chainlink2021}.
+    A lack of transparency around pricing and claims fosters mistrust~\parencite{DominguezAnguianoParte2024}.
+    Moreover, coverage remains minimal, as fewer than 3\% of farmers in Sub-Saharan Africa are insured, leaving more than 97\% unprotected~\parencite{WorldBank2022}.
 
-	Conventional agricultural insurance is largely absent in Kenya, and where it does exist, it suffers from deep structural weaknesses.
-	High administrative costs make premiums unaffordable for smallholder farmers~\parencite{Dominguez2024}.
-	Claims processing is slow and heavily manual, which delays payouts and exacerbates farmers’ financial vulnerability during shocks~\parencite{Chainlink2021}.
-	A lack of transparency around pricing and claims fosters widespread mistrust~\parencite{Dominguez2024}.
-	Moreover, coverage remains minimal: in Sub-Saharan Africa, fewer than 3\% of farmers are insured, leaving more than 97\% unprotected~\parencite{WorldBank2022}.
+    Weather Index Insurance (WII) has emerged as a potential tool to address these challenges, because it relies on measurable weather data such as rainfall or temperature thresholds to trigger payouts.
+    This reduces delays, administrative costs, and moral hazard compared to traditional indemnity-based insurance~\parencite{Jensen2016, Sibiko2018}.
+    Studies show that WII adoption can reduce poverty, improve household welfare, and encourage investment in improved seeds and fertilizers.
+    Yet despite this potential, uptake remains very limited.
+    Farmers often lack awareness or financial literacy, making WII appear too complex~\parencite{Janzen2020}.
+    Basis risk remains a major concern, as mismatches between weather station data and on-farm realities can result in payouts that do not reflect actual losses, undermining trust~\parencite{Jensen2016}.
+    Affordability is another barrier, since many farmers lack liquidity at the beginning of the planting season, precisely when premiums are due.
 
-	Weather Index Insurance (WII) has emerged as a potential tool to address these challenges, because it relies on measurable weather data such as rainfall or temperature thresholds to trigger payouts.
-	This reduces delays, administrative costs, and moral hazard compared to traditional indemnity-based insurance~\parencite{Baagoe2020,Sibiko2018}.
-	Studies show that WII adoption can reduce poverty, improve household welfare, and encourage investment in improved seeds and fertilizers.
-	Yet despite this potential, uptake remains very limited.
-	Farmers often lack awareness or financial literacy, making WII appear too complex~\parencite{Janzen2020}.
-	Basis risk remains a major concern, as mismatches between weather station data and on-farm realities can result in payouts that do not reflect actual losses, undermining trust~\parencite{Jensen2016}.
-	Affordability is another barrier, since many farmers lack liquidity at the beginning of the planting season, precisely when premiums are due.
+    These systemic shortcomings are reflected in the lived experiences of farmers like \textit{Mary}, a 38-year-old smallholder living in a semi-arid region of Kenya.
+    Mary is married with three children and owns a basic Android phone, but she has no formal insurance.
+    For her, every drought threatens both her harvest and her household income.
+    When she does consider insurance, she struggles to afford premiums upfront, finds products too complex to understand, and doubts that payouts would be delivered fairly or on time.
+    Even if she were to purchase a policy, she fears that unreliable weather data would not capture the realities of her farm.
+    As she puts it, \enquote{Why should I pay if they don't measure my reality?}
+    Mary's skepticism mirrors the sentiments of millions of smallholder farmers across Kenya who remain excluded from meaningful risk protection.
 
-	% 1.2 Benefits of Blockchain in Insurance
-	\subsection{Benefits of Blockchain in Insurance}\label{subsec:blockchain-benefits}
-	Blockchain technology, with its decentralized ledger and automated smart contracts, is particularly well-suited for microinsurance solutions targeting smallholder farmers.
-	By eliminating intermediaries, automating claims, and ensuring transparency, blockchain can reduce operational costs, increase trust, and make insurance accessible even in remote areas~\parencite{Dominguez2024,Shetty2022}.
-	Moreover, parametric microinsurance, where payouts are triggered by measurable weather events, benefits from blockchain’s immutable and auditable infrastructure, ensuring rapid and verifiable payments. \ldots
+    \section{Benefits of Blockchain in Insurance}\label{sec:benefits}
 
-	% 2 Business Model and Perspective
-	\section{Business Model and Perspective}\label{sec:business-model}
-	Smallholder farmers in Kenya, particularly those living in the Arid and Semi-Arid Lands (ASALs), represent the primary target market for decentralized parametric insurance.
-	These regions cover more than 80\% of the country’s land area, host over 70\% of the livestock population, and are home to roughly 36\% of the national population~\parencite{IUCN2021,UNEPDHI2021}.
-	With more than 98\% of agriculture dependent on rain-fed systems, smallholder farmers are disproportionately exposed to climate variability and shocks~\parencite{GoK2017}.
-	Agriculture employs around 40\% of Kenya’s total population and over 70\% of the rural population, yet fewer than 1\% of farmers currently purchase agricultural insurance, leaving the vast majority unprotected~\parencite{FAO2024b,MoA2023}.
+    \subsection{Blockchain \& Decentralized Microinsurance}
+    Blockchain technology, with its decentralized ledger and automated smart contracts, is particularly well-suited for microinsurance solutions targeting smallholder farmers.
+    By eliminating intermediaries, automating claims, and ensuring transparency, blockchain can reduce operational costs, increase trust, and make insurance accessible even in remote areas~\parencite{DominguezAnguianoParte2024, Shetty2022}.
+    Moreover, parametric microinsurance, where payouts are triggered by measurable weather events, benefits from blockchain's immutable and auditable infrastructure, ensuring rapid and verifiable payments.
+    Despite early adoption challenges, integrating blockchain into agricultural insurance provides a scalable, efficient, and reliable solution to climate risk, bridging gaps in coverage for underserved populations.
 
-	% 2.1 Target Market
-	\subsection{Target Market}\label{subsec:target-market}
-	The stakeholders in Kenya’s agricultural insurance ecosystem are diverse and interdependent.
-	Farmers are the primary end-users.
-	Insurers and micro-insurers underwrite and distribute weather-index products, while global reinsurers provide the capital buffers needed to make large-scale coverage feasible~\parencite{Artemis2017,BASIS2017}.
-	The Government of Kenya, through its National Agricultural Insurance Policy (NAIP), and regulatory agencies play a critical role in shaping policy and supervising products~\parencite{AfricanClimate2024,MoA2023}.
-	International donors and development partners fund pilots, subsidize premiums, and provide technical assistance, as seen in the Kenya Livestock Insurance Program (KLIP)~\parencite{WorldBank2022}.
-	Mobile money providers such as Safaricom’s M-Pesa enable efficient premium collection and direct payouts\parencite{Oxford2017}.
+    \subsection{Problems with Traditional Insurance}
+    Traditional insurance faces several critical challenges that limit its effectiveness, particularly in agricultural and microinsurance contexts.
+    Transparency is often lacking, so policyholders cannot easily see how premiums are set, how claims are assessed, or why payouts are delayed.
+    This lack of clarity fosters distrust between insurers and customers~\parencite{DominguezAnguianoParte2024}.
+    Claims are also slow and mostly manual, requiring extensive paperwork and human assessment.
+    These delays can worsen farmers' financial stress during climate shocks~\parencite{Chainlink2021, Shetty2022}.
+    High administrative costs associated with record-keeping, fraud checks, and staffing are often passed on as expensive premiums, making insurance unaffordable for smallholder farmers~\parencite{DominguezAnguianoParte2024}.
+    The reliance on self-reported or incomplete data further raises the risk of fraud and moral hazard, while detecting and preventing fraud requires significant resources~\parencite{Chainlink2021, Shetty2022}.
+    Finally, coverage remains extremely limited.
+    In Sub-Saharan Africa, less than 3\% of farmers are insured due to logistical, financial, and trust barriers, and the centralized structure of traditional insurance often makes it difficult for rural farmers to access services~\parencite{Alsdorf2024, WorldBank2022}.
 
-	% 2.2 High-Level Concept
-	\subsection{High-Level Concept}\label{subsec:high-level-concept}
-	\ldots
+    \subsection{Blockchain Advantages}
+    Blockchain technology helps address many of the weaknesses in traditional insurance by providing a decentralized, tamper-proof ledger that builds transparency and trust without relying on a central authority~\parencite{Shetty2022}.
+    Smart contracts can automate claims and payouts, reducing the need for human involvement and lowering administrative costs~\parencite{Chainlink2021, DominguezAnguianoParte2024}.
+    Because records on the blockchain are immutable, they cannot be tampered with, which prevents fraudulent claims.
+    Decentralized oracles also supply reliable and verifiable data for triggering insurance events.
+    In addition, blockchain can connect easily with mobile wallets, allowing farmers in remote or underserved areas to access insurance services directly~\parencite{DominguezAnguianoParte2024}.
 
-	% 3 Implementation
+    \subsection{Benefits for Parametric \& Microinsurance}
+    Applying blockchain to parametric insurance enables fully automated, event-based payouts, reducing basis risk, enhancing speed, and improving trust among stakeholders~\parencite{Chainlink2021, ParametricInsured2025, Shetty2022}.
+    For microinsurance, blockchain improves cost efficiency by lowering policy management costs, making it possible to expand coverage to underserved farmers and to explore flexible pricing models~\parencite{DominguezAnguianoParte2024, ResearchGate2023}.
+    Real-world examples such as Etherisc and Arbol already show how this can work in practice, with thousands of farmers receiving instant payouts without the need for manual claims assessments~\parencite{Alsdorf2024, DominguezAnguianoParte2024, ParametricInsured2025}.
+    The combination of decentralization, automation, and verifiable data ensures that parametric microinsurance is transparent, scalable, and trustworthy~\parencite{Shetty2022}.
+
+    \section{Target Market \& Stakeholders}\label{sec:targetmarket}
+    Smallholder farmers in Kenya, particularly those living in the Arid and Semi-Arid Lands (ASALs), represent the primary target market for decentralized parametric insurance.
+    These regions cover about 89\% of the country's land area, host over 70\% of the livestock population, and are home to roughly 36\% of the national population~\parencite{IUCN, NDMA2021, UNEP-DHI}.
+    With more than 98\% of agriculture dependent on rain-fed systems, smallholder farmers are disproportionately exposed to climate variability and shocks~\parencite{GovernmentOfKenya2017}.
+    Agriculture employs around 40\% of Kenya's total population and over 70\% of the rural population, yet fewer than 1\% of farmers currently purchase agricultural insurance, leaving the vast majority unprotected~\parencite{FAO2024, MinistryOfAgriculture2023}.
+
+    The stakeholders in Kenya's agricultural insurance ecosystem are diverse and interdependent.
+    Farmers are the primary end-users, seeking affordable and trustworthy protection against climate risks.
+    Insurers and micro-insurers, such as APA Insurance, UAP, CIC, Jubilee, and Kenya Orient, underwrite and distribute weather-index products, while global reinsurers like Swiss Re provide the financial backing needed for large-scale coverage~\parencite{Artemis2017, BASIS2017}.
+    The Government of Kenya, through its National Agricultural Insurance Policy (NAIP), and regulatory agencies such as the Insurance Regulatory Authority (IRA) and the National Drought Management Authority (NDMA), sets regulations and coordinates drought response~\parencite{AfricanClimateFoundation2024, MinistryOfAgriculture2023}.
+    International donors and development partners, including the World Bank, IFC, and FAO, subsidize premiums, and provide technical support, as seen in the Kenya Livestock Insurance Program (KLIP)~\parencite{Artemis2017, WorldBank2022}.
+    Finally, mobile money services such as Safaricom's M-Pesa make it possible to collect premiums and deliver payouts directly to farmers~\parencite{OxfordBusinessGroup2017}.
+
+    \section{Market Research \& Competitor Analysis}\label{sec:marketresearch}
+    Agricultural insurance penetration in Kenya remains extremely low, even though agriculture forms the backbone of the economy.
+    The Government's National Agricultural Insurance Policy (NAIP) highlights that less than 1\% of farmers and pastoralists purchase agricultural insurance, leaving the vast majority of producers exposed to climate shocks without any formal safety net~\parencite{MinistryOfAgriculture2023}.
+    Across Sub-Saharan Africa, the picture is similar.
+    There are about 48 million smallholder farmers, yet fewer than 1.5 million are insured.
+    This means that only around 3\% have coverage, leaving 97\% unprotected, despite an annual demand estimated at USD 10--14 billion compared to a premium pool of only USD 1--3 billion~\parencite{ACREAfrica2020}.
+    These figures highlight an enormous protection gap, both in Kenya and across the region, where millions of rural households face severe climate risks without reliable financial buffers.
+
+    Despite these low figures, recent pilots suggest that demand exists when products are designed to be affordable, transparent, and accessible.
+    For instance, the World Bank–supported One Million Farmers Platform has enabled over 70,000 smallholders across 15 counties to access weather-index insurance, primarily through digital delivery channels and bundled products.
+    This suggests that the barrier is not farmer willingness but the way insurance is designed and distributed~\parencite{WorldBank2022}.
+
+    On the supply side, Kenya already offers both livestock and crop index solutions.
+    The Kenya Livestock Insurance Program (KLIP) is a leading public--private partnership providing drought insurance in ASAL counties.
+    It is run by a consortium of local insurers led by APA (together with UAP, CIC, Jubilee, Heritage, Amaco, and Kenya Orient) and supported by Swiss Re as reinsurer.
+    KLIP has successfully delivered multi-million-shilling payouts when drought thresholds were met~\parencite{Artemis2017, BASIS2017}.
+    KLIP demonstrates proof of concept for index insurance in Kenya, showing that government support, consortium underwriting, and reinsurer participation can combine to deliver payouts at scale.
+
+    In the crop sector, ACRE Africa and Pula are the leading intermediaries.
+    ACRE Africa has developed weather-index products that are increasingly bundled with agronomic services, such as advisory tools and crop-cutting experiments, to improve product value and data accuracy~\parencite{ACREAfrica2024}.
+    Pula, by contrast, has built scale across Africa by bundling insurance with seeds, fertilizer, and other farm inputs, often distributed through governments and value-chain partners.
+    Its use of satellite and remote sensing data has enabled broad coverage, though it continues to face challenges with basis risk and farmer liquidity constraints at planting~\parencite{MunichReFoundation2022, UNSGSA2023}.
+
+    More recently, blockchain-based models have entered the Kenyan market.
+    Etherisc, in collaboration with ACRE Africa, piloted a \enquote{Bima Pima} crop cover in 2021, reaching over 17,000 farmers and delivering the first blockchain-based payouts in Kenya.
+    By embedding smart contracts and decentralized oracles into the insurance process, Etherisc was able to automate claim settlement and reduce administrative overhead~\parencite{Etherisc2021}.
+    Although small in scale, this pilot shows how blockchain can help reduce long-standing problems in agricultural insurance, especially those related to trust, transparency, and timely payouts.
+
+    OKO Finance, for example, has demonstrated in Mali and Uganda how mobile-first, index-based agriculture insurance can be structured using satellite or remote sensing data and delivered through digital channels~\parencite{ADA_OKOFinance2021}.
+    Although OKO is not known to be active in Kenya at the moment, its model suggests how digital ecosystems could lower distribution costs and expand access to underserved farming populations.
+
+    In short, agricultural insurance in Kenya is still underdeveloped, with less than 1\% of farmers insured.
+    However, programs like KLIP and private-sector innovators such as ACRE Africa and Pula show that growth is possible.
+    Farmers still face major barriers, including basis risk~\parencite{Jensen2016}, limited awareness and perceived complexity~\parencite{Janzen2020}, and upfront liquidity constraints all reduce trust and limit uptake.
+    Early blockchain pilots such as Etherisc's indicate promising pathways to reduce administrative costs and improve transparency, but scaling such solutions will depend on robust data infrastructure, effective oracles, and farmer-centric design.
+    Overall, the market reflects both a large protection gap and a significant opportunity, as innovative, technology-enabled models that combine affordability, transparency, and mobile integration have the potential to transform risk management for Kenya's smallholder farmers.
+
+
 	\section{Implementation}\label{sec:implementation}
 	Overview of implementation goals, strategy and architecture.
 
@@ -140,7 +234,7 @@
 	These extensions and some of the more advanced features that were not provided in the prototype will be discussed in sections~\ref{subsec:qa-security} and~\ref{subsec:outlook}
 	It is important to note that the project is not a complete MVP (minimum viable product), due to the constraints when it comes to funding for example Chainlink as provider for weather data or using actual currency as a payment method.
 
-	% 3.1 Development Process & Strategy
+
 	\subsection{Development Process \& Strategy}\label{subsec:dev-strategy}
 	The strategy for the implementation was largely based on a learning process.
 	At first the focus was mainly on exploring the basics of Solidity based Smart Contracts and creating an early working prototype.
@@ -177,7 +271,7 @@
 	These are just the most important tasks that are included in the final prototype.
 	For further necessary steps towards a finished product refer to~\ref{subsec:outlook}.
 
-	% 3.2 System (Macro) Architecture
+
 	\subsection{System (Macro) Architecture}\label{subsec:system-architecture}
 	The macro architecture of the system is centered around the RainyDayFund smart contract, which acts as the core of the decentralized insurance platform.
 	It is designed to be extensible for integration with oracles (such as Chainlink), \texttt{ERC20 tokens} as payment and is integrated within a frontend built with React.
@@ -213,7 +307,7 @@
         \label{enum:phases}
 	\end{enumerate}
 
-	% 3.3 Smart Contract Design (Micro)
+
 	\subsection{Smart Contract Design (Micro)}\label{subsec:smart-contract-design}
 	The project is built around a Solidity smart contract using the Ethereum Virtual Machine.
 	This central RainyDayFund contract can be called using the front end and holds all the exposed functionality for the consumer.
@@ -281,7 +375,7 @@
     \end{figure}
 
 
-	% 3.4 Developmnet Tools & Infrastructure 
+
 	\subsection{Development Tools \& Infrastructure}\label{subsec:development-tools-infrastructure}
 	The development process utilized a modern toolchain centered around the Hardhat framework for smart contract development, deployment and testing.
 	For the smart contract development, we first used the Remix IDE, which allowed for easy deployment and manual testing directly in the browser without any setup requirements.
@@ -294,7 +388,7 @@
 	For development environments, we used the Remix IDE initially for its straightforward Solidity development capabilities, and later Neovim for anything that wasn't written in Solidity.
 	All deployment was handled through JavaScript files within the Hardhat framework. 
 
-	% 3.5 Quality Assurance & Security
+
 	\subsection{Quality Assurance \& Security}\label{subsec:qa-security}
 	Our quality assurance strategy focused on comprehensive testing and systematic validation of contract functionality.
 	All tests were written in TypeScript using the Node.js framework with Chai for assertions, which helped catch errors early and made the code easier to maintain.
@@ -321,7 +415,7 @@
 		\label{fig:test-set-up}
 	\end{figure}
 
-	% 3.6 Outlook & Next Steps
+
 	\subsection{Outlook \& Next Steps}\label{subsec:outlook}
 	The most important next step is integrating real Chainlink oracles for weather data.
 	Right now we're using mock data, but production needs reliable, tamper-proof weather information from multiple sources.
@@ -351,7 +445,6 @@
 	The current local testing is good for development, but we need real network conditions to catch problems we haven't thought of.
 
 
-	% 4 Conclusion
 	\section{Conclusion}\label{sec:conclusion}
 	\ldots
 
@@ -359,7 +452,52 @@
 	\printbibliography
 
 	\appendix
-	\section*{Appendices}\label{sec:appendix}
-	Add any supplementary material here.
+	\section{Smart Contract Code}\label{sec:contract-code}
+	\input{smart-contract-code-latex}
+
+	\section{Contract Architecture Analysis}\label{sec:contract-analysis}
+	The smart contracts presented above form the foundation of our decentralized parametric insurance system.
+    Each plays a specific role in the ecosystem:
+
+	\subsection{RainyDayFund}\label{subsec:analysis-rainy-day-fund}
+	This is the core contract of the system and implements several key components:
+
+	\begin{enumerate}
+	    \item \textbf{Policy Management}: Handles the issuance of policy tokens to farmers and tracks active policies.
+	    \item \textbf{Season States}: Implements a state machine for managing different phases of the insurance season (active, inactive, claim, withdraw, finished).
+	    \item \textbf{Claims Processing}: Processes claims by verifying policy ownership and weather conditions.
+	    \item \textbf{Investment Management}: Allows investors to provide liquidity to the risk pool and earn returns.
+	    \item \textbf{Weather Data Integration}: Interfaces with the weather oracle to retrieve data for claims verification.
+	\end{enumerate}
+
+	The contract employs several important design patterns:
+	\begin{itemize}
+	    \item \textbf{ERC4626 Tokenized Vault}: For managing investments and yield generation.
+	    \item \textbf{ERC20 Policy Tokens}: For representing insurance policies as transferable assets.
+	    \item \textbf{Non-reentrant Guards}: To prevent reentrancy attacks during financial transactions.
+	    \item \textbf{Owner Controls}: To manage system parameters and seasonal transitions.
+	    \item \textbf{State Machine}: To enforce the correct sequence of operations based on the current season state.
+	\end{itemize}
+
+	\subsection{MockUSDC}\label{subsec:analysis-mock-usdc}
+	This contract simulates a stablecoin for testing purposes.
+    In a production environment, this would be replaced with a real stablecoin like USDC. The mock implementation provides:
+
+	\begin{itemize}
+	    \item Standard ERC20 functionality for token transfers and allowances
+	    \item Additional minting capability for testing purposes
+	    \item Initial supply of 1,000,000 tokens for the contract deployer
+	\end{itemize}
+
+	\subsection{MockWeatherOracle}\label{subsec:analysis-mock-weather-oracle}
+	This contract simulates a weather data oracle, conforming to Chainlink's AggregatorV3Interface standard.
+    In production, this would be replaced with actual Chainlink oracles providing real weather data.
+    The mock implementation provides:
+
+	\begin{itemize}
+	    \item Storage for weather data values
+	    \item Functions to update weather data (for testing purposes)
+	    \item Standard interface conformance to ensure compatibility with the main contract
+	\end{itemize}
 
 \end{document}
