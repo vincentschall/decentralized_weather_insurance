@@ -145,13 +145,13 @@
 
     \section{Benefits of Blockchain in Insurance}\label{sec:benefits}
 
-    \subsection{Blockchain \& Decentralized Microinsurance}
+    \subsection{Blockchain \& Decentralized Microinsurance}\label{subsec:blockchain-&-decentralized-microinsurance}
     Blockchain technology, with its decentralized ledger and automated smart contracts, is particularly well-suited for microinsurance solutions targeting smallholder farmers.
     By eliminating intermediaries, automating claims, and ensuring transparency, blockchain can reduce operational costs, increase trust, and make insurance accessible even in remote areas~\parencite{DominguezAnguianoParte2024, Shetty2022}.
     Moreover, parametric microinsurance, where payouts are triggered by measurable weather events, benefits from blockchain's immutable and auditable infrastructure, ensuring rapid and verifiable payments.
     Despite early adoption challenges, integrating blockchain into agricultural insurance provides a scalable, efficient, and reliable solution to climate risk, bridging gaps in coverage for underserved populations.
 
-    \subsection{Problems with Traditional Insurance}
+    \subsection{Problems with Traditional Insurance}\label{subsec:problems-with-traditional-insurance}
     Traditional insurance faces several critical challenges that limit its effectiveness, particularly in agricultural and microinsurance contexts.
     Transparency is often lacking, so policyholders cannot easily see how premiums are set, how claims are assessed, or why payouts are delayed.
     This lack of clarity fosters distrust between insurers and customers~\parencite{DominguezAnguianoParte2024}.
@@ -162,14 +162,14 @@
     Finally, coverage remains extremely limited.
     In Sub-Saharan Africa, less than 3\% of farmers are insured due to logistical, financial, and trust barriers, and the centralized structure of traditional insurance often makes it difficult for rural farmers to access services~\parencite{Alsdorf2024, WorldBank2022}.
 
-    \subsection{Blockchain Advantages}
+    \subsection{Blockchain Advantages}\label{subsec:blockchain-advantages}
     Blockchain technology helps address many of the weaknesses in traditional insurance by providing a decentralized, tamper-proof ledger that builds transparency and trust without relying on a central authority~\parencite{Shetty2022}.
     Smart contracts can automate claims and payouts, reducing the need for human involvement and lowering administrative costs~\parencite{Chainlink2021, DominguezAnguianoParte2024}.
     Because records on the blockchain are immutable, they cannot be tampered with, which prevents fraudulent claims.
     Decentralized oracles also supply reliable and verifiable data for triggering insurance events.
     In addition, blockchain can connect easily with mobile wallets, allowing farmers in remote or underserved areas to access insurance services directly~\parencite{DominguezAnguianoParte2024}.
 
-    \subsection{Benefits for Parametric \& Microinsurance}
+    \subsection{Benefits for Parametric \& Microinsurance}\label{subsec:benefits-for-parametric-&-microinsurance}
     Applying blockchain to parametric insurance enables fully automated, event-based payouts, reducing basis risk, enhancing speed, and improving trust among stakeholders~\parencite{Chainlink2021, ParametricInsured2025, Shetty2022}.
     For microinsurance, blockchain improves cost efficiency by lowering policy management costs, making it possible to expand coverage to underserved farmers and to explore flexible pricing models~\parencite{DominguezAnguianoParte2024, ResearchGate2023}.
     Real-world examples such as Etherisc and Arbol already show how this can work in practice, with thousands of farmers receiving instant payouts without the need for manual claims assessments~\parencite{Alsdorf2024, DominguezAnguianoParte2024, ParametricInsured2025}.
@@ -374,7 +374,7 @@
         \label{fig:final-contract-design}
     \end{figure}
 
-
+    \textcolor{red}{This is yet unfinished, the newest state should be explained in detail here! Note: For Code references or overall architecture refer to the Appendix A and B}
 
 	\subsection{Development Tools \& Infrastructure}\label{subsec:development-tools-infrastructure}
 	The development process utilized a modern toolchain centered around the Hardhat framework for smart contract development, deployment and testing.
@@ -417,6 +417,7 @@
 
 
 	\subsection{Outlook \& Next Steps}\label{subsec:outlook}
+
 	The most important next step is integrating real Chainlink oracles for weather data.
 	Right now we're using mock data, but production needs reliable, tamper-proof weather information from multiple sources.
 	We'll also need to deploy on a real network.
