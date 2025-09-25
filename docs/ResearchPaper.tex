@@ -137,7 +137,7 @@
 
     The goal for this project was providing a showcase prototype .
     Therefore, the focus was on providing the most important features, a neat, easy UI and a good test-setup to showcase the functionality and laying the groundwork for possible extensions.
-    These extensions and some of the more advanced features that were not provided in the prototype will be discussed in sections~\ref{subsec:security-risk} and~\ref{subsec:outlook}
+    These extensions and some of the more advanced features that were not provided in the prototype will be discussed in sections~\ref{subsec:qa-security} and~\ref{subsec:outlook}
     It is important to note that the project is not a complete MVP (minimum viable product), due to the constraints when it comes to funding for example Chainlink as provider for weather data or using actual currency as a payment method.
 
     % 3.1 Development Process & Strategy
@@ -247,13 +247,24 @@
 
     // Solving of issues -> explain new structure
 
+
     % 3.4 Developmnet Tools & Infrastructure 
-    \subsection{Development Tools \& Infrastructure }\label{subsec:development-tools-infrastructure}
-    The development process utilized a modern toolchain centered around the Hardhat framework. We used this to develop, deploy and test our smart contracts. In detail, we used a javascript file to deploy our contracts. All of our tests were written in Typescript, and use the Node.js framework.
-    Additionaly, we wrote a React based frontend. It provides an interface to manually test our contracts.
-    Throughout our project, we used version control via git and explictly a GitHub repository. This made collaboration between team members flawless, and provided accountability measures in case of errors.
-    For the smart contract development, we first used the Remix IDE. It allowed for easy deployment and manual testing. For anything that wasn't written in solidity, we used Neovim.
-    Another big part of the project is the network which was used for the contract deployment. We initially planned on using the Sepolia testnet, but in the final sprint decided to only deploy it locally. The reason for this is a multitude of problems arising when we tried it via Sepolia. The furthest we got was deploying, but interacting turned out too difficult in this timeframe. The compomise was made: use local network only, but in return we managed to get a fully working prototype.
+    \subsection{Development Tools \& Infrastructure}\label{subsec:development-tools-infrastructure}
+    The development process utilized a modern toolchain centered around the Hardhat framework.
+    We used this to develop, deploy and test our smart contracts.
+    In detail, we used a javascript file to deploy our contracts.
+    All of our tests were written in Typescript, and use the Node.js framework.
+    Additionaly, we wrote a React based frontend.
+    It provides an interface to manually test our contracts.
+    Throughout our project, we used version control via git and explictly a GitHub repository.
+    This made collaboration between team members flawless, and provided accountability measures in case of errors.
+    For the smart contract development, we first used the Remix IDE. It allowed for easy deployment and manual testing.
+    For anything that wasn't written in solidity, we used Neovim.
+    Another big part of the project is the network which was used for the contract deployment.
+    We initially planned on using the Sepolia testnet, but in the final sprint decided to only deploy it locally.
+    The reason for this is a multitude of problems arising when we tried it via Sepolia.
+    The furthest we got was deploying, but interacting turned out too difficult in this timeframe.
+    The compomise was made: use local network only, but in return we managed to get a fully working prototype.
 
     The test setup, as shown in Figure~\ref{fig:test-set-up}, highlights the importance of robust testing and code coverage in the project.
 
@@ -274,30 +285,54 @@
         \label{fig:test-set-up}
     \end{figure}
 
+
     % 3.5 Quality Assurance & Security
     \subsection{Quality Assurance \& Security}\label{subsec:qa-security}
-   We started with Remix IDE because it's straightforward for learning Solidity - you can write, deploy, and test contracts right in the browser without any setup. This made it easy to experiment with basic functionality and get familiar with smart contract development.
-Once we had a working prototype, we moved to Hardhat. It comes with a local blockchain that simulates real network conditions, which made testing reliable.
-For testing, we used TypeScript to catch errors early and make the code easier to maintain. The tests run on Node.js with Mocha and Chai for assertions. We also created MockUSCD, an ERC20 token that behaves like USDC, so we could test everything without needing real money or external services.
-The frontend is built with React, and we used Git with GitHub for version control. This made collaboration smooth - we could work on different parts simultaneously without stepping on each other's toes.
-We originally planned to deploy on Sepolia testnet, but ran into issues with wallet connections and unpredictable gas costs that we couldn't solve in time. So we stuck with local deployment through Hardhat's network. This actually worked out well for demonstrations since everything runs predictably without external dependencies.
-Our test coverage reaches nearly 100\% on critical functions, which helped catch bugs early when they were still easy to fix. The test setup shown in Figure~\ref{fig:test-set-up} demonstrates how we can verify the contract works correctly across different scenarios.
+   We started with Remix IDE because it's straightforward for learning Solidity - you can write, deploy, and test contracts right in the browser without any setup.
+   This made it easy to experiment with basic functionality and get familiar with smart contract development.
+    Once we had a working prototype, we moved to Hardhat.
+   It comes with a local blockchain that simulates real network conditions, which made testing reliable.
+    For testing, we used TypeScript to catch errors early and make the code easier to maintain.
+   The tests run on Node.js with Mocha and Chai for assertions.
+   We also created MockUSCD, an ERC20 token that behaves like USDC, so we could test everything without needing real money or external services.
+    The frontend is built with React, and we used Git with GitHub for version control.
+   This made collaboration smooth - we could work on different parts simultaneously without stepping on each other's toes.
+    We originally planned to deploy on Sepolia testnet, but ran into issues with wallet connections and unpredictable gas costs that we couldn't solve in time.
+   So we stuck with local deployment through Hardhat's network.
+   This actually worked out well for demonstrations since everything runs predictably without external dependencies.
+    Our test coverage reaches nearly 100\% on critical functions, which helped catch bugs early when they were still easy to fix.
+    The test setup shown in Figure~\ref{fig:test-set-up} demonstrates how we can verify the contract works correctly across different scenarios.
+
+
     % 3.6 Outlook & Next Steps
     \subsection{Outlook \& Next Steps}\label{subsec:outlook}
-    LThe most important next step is integrating real Chainlink oracles for weather data. Right now we're using mock data, but production needs reliable, tamper-proof weather information from multiple sources.
-We'll also need to deploy on a real network. Layer 2 solutions like Polygon or Arbitrum make sense because gas costs are much lower - important when your users are price-sensitive farmers. We might also look into cross-chain deployment to give users more options.
-The smart contract architecture needs some work for production. We'll want upgradeability mechanisms so we can fix bugs and add features, but we need to balance that with immutability for user trust. Gas optimization is another priority - the current contract works but isn't optimized for cost.
-For additional features, we're thinking about crop-specific insurance products and multi-season coverage. The current single-season model is too limiting for real-world agriculture. We'd also like to support group policies for farmer cooperatives.
-The frontend needs to be much more user-friendly, especially for people with limited digital experience. Mobile-first design is essential since most users will access this through smartphones. We'll need offline capabilities too since internet connectivity can be spotty in rural areas.
-Technical priorities include:
-\begin{enumerate}
-	\item Chainlink integration for real weather data
-	\item Layer 2 deployment for lower costs
-	\item Gas optimization and contract upgrades
-	\item Mobile-optimized frontend with offline support
-	\item Multi-language support and simplified interfaces
+    The most important next step is integrating real Chainlink oracles for weather data.
+    Right now we're using mock data, but production needs reliable, tamper-proof weather information from multiple sources.
+    We'll also need to deploy on a real network.
+    Layer 2 solutions like Polygon or Arbitrum make sense because gas costs are much lower - important when your users are price-sensitive farmers.
+    We might also look into cross-chain deployment to give users more options.
+    The smart contract architecture needs some work for production.
+    We'll want upgradeability mechanisms so we can fix bugs and add features, but we need to balance that with immutability for user trust.
+    Gas optimization is another priority - the current contract works but isn't optimized for cost.
+    For additional features, we're thinking about crop-specific insurance products and multi-season coverage.
+    The current single-season model is too limiting for real-world agriculture.
+    We'd also like to support group policies for farmer cooperatives.
+    The frontend needs to be much more user-friendly, especially for people with limited digital experience.
+    Mobile-first design is essential since most users will access this through smartphones.
+    We'll need offline capabilities too since internet connectivity can be spotty in rural areas.
+    Technical priorities include:
 
-We're also planning more comprehensive testing on testnets once we sort out the deployment issues. The current local testing is good for development but we need real network conditions to catch problems we haven't thought of.
+    \begin{enumerate}
+        \item Chainlink integration for real weather data
+        \item Layer 2 deployment for lower costs
+        \item Gas optimization and contract upgrades
+        \item Mobile-optimized frontend with offline support
+        \item Multi-language support and simplified interfaces
+    \end{enumerate}
+
+    We're also planning more comprehensive testing on testnets once we sort out the deployment issues.
+    The current local testing is good for development, but we need real network conditions to catch problems we haven't thought of.
+
 
     % 4 Conclusion
     \section{Conclusion}\label{sec:conclusion}
