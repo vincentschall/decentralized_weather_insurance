@@ -23,5 +23,3 @@ If this is your first run, go into /client and run `npm install`. Then do the sa
 
 ![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white)
 ![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
-![Smart Contracts](https://img.shields.io/badge/Smart%20Contracts-Secure-blue?logo=lock&logoColor=white)
-![Weather Data](https://img.shields.io/badge/Weather-API-blue?logo=cloud&logoColor=white)
