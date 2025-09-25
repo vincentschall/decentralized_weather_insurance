@@ -151,7 +151,7 @@
 
 	\begin{enumerate}[1]
 		\item \textbf{Division of Work:} The work was divided mostly into two parts.
-			One part was the overarching architecture and product design, including specifically the smart contract development using Solidity as well as researching existing libraries and standards to implement and use.
+			One part was the overarching architecture and product design, including specifically the smart contract development using Solidity, as well as researching existing libraries and standards to implement and use.
 			The other part, equally important was researching and setting up the tools and frameworks for everything else: The project and testing setup using Hardhat and writing the actual test-code, implementing the UI, using React, Managing the Repository, and bug-fixing.
 			This division was important for numerous reasons, but especially because it allowed for mutual verification and simultaneously the possibility to truly focus on specific topics.
 		\item \textbf{Testing Setup:} The Testing-Setup within Hardhat and using Node.js made finding bugs and testing after changes much more efficient and also allows for neat and compact showcases of the features and working prototype code.
@@ -210,6 +210,7 @@
 			Farmers may now try to claim their policies and receive their coverage payouts, while investors have to wait until this phase is over.
 		\item \textbf{Withdrawal Phase:} Now investors may choose to withdraw their capital and receive their yield, while farmers wait until the next season is started.
 		\item \textbf{Finished Phase:} The season is over, unclaimed policies are now invalid and not-withdrawn investments are used as liquidity for the next season, earning yield on the current investment (including the earned yield), creating a compounding effect.
+        \label{enum:phases}
 	\end{enumerate}
 
 	% 3.3 Smart Contract Design (Micro)
@@ -232,8 +233,8 @@
 		\item \textbf{No proper incentive for investors:} We had already planned to give the investors some incentive to keep their funds in the riskpool, even after the season would end, to increase liquidity for the next season.
 			The idea to achieve this, was, to use compound interest or create some other form of yield over time.
 			However, implementing this with the initial setup proved difficult and created vastly unfair results \textcolor{red}{Hier vllt nochmal genauer erkl\"aren}
-		\item \textbf{Weather oracle:} The initial mock-up for the weather oracle was just a number that could be accessed and stored on the contract directly, as an initial mock-up for testing purposes.
-			Nevertheless, this was far from the goal of using chainlink as a decentralized oracle to reliably and transparently access the data.
+		\item \textbf{Weather oracle:} The initial mock-up for the weather oracle was just a number that could be accessed and stored on the contract directly.
+			This was far from the goal of using chainlink as a decentralized oracle to reliably and transparently access the data.
 		\item \textbf{Attack vectors:} Lastly there were some attack-vectors, especially for the owner.
 			The \texttt{startNewSeason()} function could be used at any point during the season, thus rendering unclaimed policyTokens worthless and not allowing for investment-withdrawals to be made.
 	\end{enumerate}
@@ -245,7 +246,39 @@
 		\label{fig:initial-contract-design}
 	\end{figure}
 
-	// Solving of issues -> explain new structure
+	Addressing these issues of the initial prototype the contract was restructured.
+    The main fixes were:
+
+    % Table: Major Issues and Fixes
+    \begin{table}[H]
+        \centering
+        \caption{Major Issues and Corresponding Fixes}
+        \label{tab:issues-fixes}
+        \begin{tabular}{|p{0.42\textwidth}|p{0.42\textwidth}|}
+            \hline
+            \textbf{Issue} & \textbf{Fix} \\
+            \hline
+            Mapping for storing addresses was gas-inefficient and did not track policy resales & Removed the mapping \\
+            \hline
+            No proper incentive for investors and difficulties with implementation & Switched from self-made investment tracking to using the \texttt{ERC4626 vault} \\
+            \hline
+            Using Token Standards ERC4626, ERC20 and ERC1155 simultaneously, causing errors with inheritance of the contract & Switched from ERC1155 to only using ERC20 for the policyTokens \\
+            \hline
+            Weather Oracle / Chainlink integration & Implementing the proper Chainlink standards for the mock-up-weather oracle~\parencite{AggregatorV3Interface} \\
+            \hline
+            Attack Vector for Owner & Fixed some issues by including modifiers and properly implementing \enquote{mini-}state-machine (refer to enumeration~\ref{enum:phases}) \\
+            \hline
+        \end{tabular}
+    \end{table}
+
+    The final state of the contract can be seen here:
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.5]{graphics/ClassDiagram_New}
+        \caption{Final Contract Design \\ \textit{Source: Author's own.}}
+        \label{fig:final-contract-design}
+    \end{figure}
 
 
 	% 3.4 Developmnet Tools & Infrastructure 
