@@ -365,6 +365,9 @@
         \end{tabular}
     \end{table}
 
+
+    \subsection{Implementation: Final State of the project}\label{subsec:final-state}
+
     The final state of the contract can be seen here:
 
     \begin{figure}[H]
@@ -374,7 +377,187 @@
         \label{fig:final-contract-design}
     \end{figure}
 
-    \textcolor{red}{This is yet unfinished, the newest state should be explained in detail here! Note: For Code references or overall architecture refer to the Appendix A and B}
+    This class diagram only shows the most important functions and fields of the contract.
+    The full code can be found in the appendix~\ref{sec:contract-code} along with some notes on its functionality.
+
+    The constructor takes 2 arguments:
+    \begin{enumerate}[(1)]
+        \item \textbf{usdcAddress:} The address of the stablecoin that will be used for the transactions, here this would be the address of the deployed MockUSDC contract
+        \item \textbf{weatherOracle:} The address of the weather data oracle service, here this would be the address of the deployed MockWeatherOracle contract, but in production should be the corresponding chainlink address.
+    \end{enumerate}
+
+    Both are required to not be zero and used to set the corresponding fields for further use.
+    Then the first season is initialized.
+
+    \begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:lstlisting1}]
+        ...
+
+        constructor(address _usdcAddress, address _weatherOracle)
+        ERC4626(IERC20Metadata(_usdcAddress))
+        ERC20("RainyDay Investor Shares", "RDIS")
+        Ownable(msg.sender)
+            {
+            require(_usdcAddress != address(0), "USDC address zero");
+            usdc = IERC20(_usdcAddress);
+
+            require(_weatherOracle != address(0), "Weather oracle zero");
+            weatherFeed = AggregatorV3Interface(_weatherOracle);
+
+            currentSeasonId = 1;
+            _initializeSeason(currentSeasonId);
+            seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit;
+
+            // Enable testing mode by default for local testing
+            testingMode = true;
+        }
+
+        ...
+    \end{lslisting}
+
+    The contract utilizes a SeasonState enum to keep track of the phase that is currently active in the state Machine.
+    The \texttt{getSeasonState()} method is used as the state machine and utilizes the \texttt{getCurrentTime()} method.
+    The choice to implement the time this way, instead of simply using the \texttt{block.timestamp} was made to allow for time manipulation in testing.
+    That is why there is a testingTimeOffset being added to the timestamp.
+    This offset is calculated and set in a method of its own, that is only used for testing / showcasing reasons and would be removed for production.
+
+    \begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:lstlisting2}]
+        ...
+
+        enum SeasonState { ACTIVE, INACTIVE, CLAIM, WITHDRAW, FINISHED }
+
+        ...
+
+        // Testing function to get current time (can be offset in testing mode)
+        function getCurrentTime() public view returns (uint256) {
+          if (testingMode) {
+            return block.timestamp + testingTimeOffset;
+          }
+          return block.timestamp;
+        }
+
+        ...
+
+        function getSeasonState() public view returns (SeasonState) {
+        uint256 currentTime = getCurrentTime();
+        if (currentTime < seasonOverTimeStamp - timeUnit) {
+        return SeasonState.ACTIVE;
+        } else if (currentTime < seasonOverTimeStamp) {
+        return SeasonState.INACTIVE;
+        } else if (currentTime < seasonOverTimeStamp + timeUnit) {
+        return SeasonState.CLAIM;
+        } else if (currentTime < seasonOverTimeStamp + 2 * timeUnit) {
+        return SeasonState.WITHDRAW;
+        } else {
+        return SeasonState.FINISHED;
+        }
+        }
+
+        modifier onlyAfterFullSeasonCycle() {
+            require(getSeasonState() == SeasonState.FINISHED, "Season not fully finished yet");
+            _;
+        }
+
+        ...
+
+       function startNewSeason(uint256 _premium) external onlyOwner onlyAfterFullSeasonCycle {
+           currentSeasonId++;
+           premium = _premium;
+           seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit;
+           _initializeSeason(currentSeasonId);
+       }
+
+        ...
+    \end{lstlisting}
+
+    One example of how this gets used, can be seen in the modifier \texttt{onlyAfterFullSeasonCycle()}, which requires, that the current season state is \enquote{FINISHED}.
+    This modifier is for example used for the \texttt{startNewSeason()} function, which initializes a new season with the given premium.
+    The function should only be called once the last season has finished, to avoid policies not being claimable or investors not being able to withdraw their funds.
+
+    The most important functions for the farmers are \texttt{buyPolicy()} and \texttt{claimPolicies()}.
+    They allow for purchasing and filing claims while checking all necessary conditions.
+
+    \begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:lstlisting3}]
+    ...
+
+    function buyPolicy(uint256 _amount) external nonReentrant returns (uint256 seasonId) {
+        require(_amount > 0, "Amount > 0");
+        require(getSeasonState() == SeasonState.ACTIVE, "Not in active period");
+
+        SeasonPolicy storage policy = seasonPolicies[currentSeasonId];
+
+        uint256 totalPremium = policy.premium * _amount;
+        require(usdc.transferFrom(msg.sender, address(this), totalPremium), "Transfer failed");
+
+        SeasonPolicyToken(address(policy.policyToken)).mint(msg.sender, _amount);
+        policy.totalPoliciesSold += _amount;
+
+        emit PolicyBought(msg.sender, currentSeasonId, _amount, totalPremium);
+        return currentSeasonId;
+    }
+
+    function claimPolicies() external nonReentrant {
+        require(getSeasonState() == SeasonState.CLAIM, "Not in claim period");
+
+        SeasonPolicy storage policy = seasonPolicies[currentSeasonId];
+        SeasonPolicyToken token = SeasonPolicyToken(address(policy.policyToken));
+        uint256 amount = token.balanceOf(msg.sender);
+        require(amount > 0, "No policies to claim");
+
+        (,int256 weather,) = getWeatherData();
+        require(uint256(weather) < 10, "Weather not bad enough");
+
+        uint256 totalPayout = policy.payoutAmount * amount;
+        require(usdc.balanceOf(address(this)) >= totalPayout, "Insufficient funds");
+
+        require(usdc.transfer(msg.sender, totalPayout), "Payout failed");
+        token.burnFrom(msg.sender, amount);
+
+        emit ClaimMade(msg.sender, currentSeasonId, amount, totalPayout);
+    }
+
+    ...
+    \end{lstlisting}
+
+    The \texttt{buyPolicy()} function takes in the amount of \texttt{policyTokens} the user wants to buy and returns the current seasonId.
+    This id could be used to display metadata about the season in the front-end.
+    The amount needs to be above zero and the season needs to be in the active phase.
+    The premium gets calculated based on the amount and the premium stored in the SeasonPolicy struct, that gets set at the beginning of the season, based on the outcome of the auction.
+    After the transfer of the funds the \texttt{policyTokens} get minted to the users wallet and the corresponding event gets emitted.
+
+    The \texttt{claimPolicies()} function requires the season to be in the claim phase and claims all available seasonPolicy Tokens in the users wallet.
+    It checks whether the weather condition is met through the weather oracle with the \texttt{getWeatherData()} function and calculates the total payout, based on the fixed payout per token and the amount of tokens.
+    Lastly the payout is made, the tokens are burned and an event gets emitted.
+
+    Both functions are secured by a reentrancyGuard as a security best practice, because unlike in the prototype setup, in production the stableCoin contract used is not directly controllable and there might be some malicious code or even potential flash loan attacks, where the attacker attempts to manipulate the contract state through rapid sequential interactions.
+    In both cases the tokens are minted/burned only after the transfer was successful to avoid minting/burning should the transfer fail.
+
+    Lastly the investment logic is simplified a lot by using the \texttt{ERC4626 token vault} standard:
+
+    \begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:lstlisting4}]
+    ...
+
+    // ERC4626 investment logic
+    function invest(uint256 assets) external nonReentrant onlyDuringSeason {
+        require(assets > 0, "Amount > 0");
+        deposit(assets, msg.sender);
+        emit InvestmentMade(msg.sender, assets);
+    }
+
+    function redeemShares(uint256 shares) external nonReentrant {
+        require(getSeasonState() == SeasonState.WITHDRAW, "Not in withdrawal period");
+        uint256 assets = redeem(shares, msg.sender, msg.sender);
+        emit InvestmentWithdrawn(msg.sender, assets);
+    }
+
+    ...
+    \end{lstlisting}
+
+    The \texttt{invest()} function simply deposits the assets in the vault, requiring the amount to be above zero and the \texttt{redeemShares()} function redeems the users shares again.
+    All the transfers are handled by the vault implementation.
+    The main customization is the \texttt{onlyDuringSeason} modifier for the \texttt{invest()} function and the requirement for the \enquote{WITHDRAW} phase in the \texttt{redeemShares()} function, making sure investments are not made during the claim or withdraw phases and the withdraws can only happen in the coresponding phase.
+
+    Some information about the \texttt{SeasonPolicyToken}, \texttt{MockUSDC} and \texttt{MockWeatherOracle} contracts can be found in the appendix~\ref{sec:contract-analysis}.
+
 
 	\subsection{Development Tools \& Infrastructure}\label{subsec:development-tools-infrastructure}
 	The development process utilized a modern toolchain centered around the Hardhat framework for smart contract development, deployment and testing.
@@ -448,6 +631,8 @@
 
 	\section{Conclusion}\label{sec:conclusion}
 	\ldots
+
+    The entire project can be found in the \href{https://github.com/vincentschall/decentralized_weather_insurance}{Github repository}.
 
 	% ---------- Bibliography ----------
 	\printbibliography

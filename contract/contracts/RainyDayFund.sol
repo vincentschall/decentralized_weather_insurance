@@ -63,7 +63,7 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
 
     currentSeasonId = 1;
     _initializeSeason(currentSeasonId);
-    seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit; // short demo
+    seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit; 
 
     // Enable testing mode by default for local testing
     testingMode = true;
@@ -196,8 +196,8 @@ contract RainyDayFund is ERC4626, Ownable, ReentrancyGuard {
     uint256 totalPayout = policy.payoutAmount * amount;
     require(usdc.balanceOf(address(this)) >= totalPayout, "Insufficient funds");
 
-    token.burnFrom(msg.sender, amount);
     require(usdc.transfer(msg.sender, totalPayout), "Payout failed");
+    token.burnFrom(msg.sender, amount);
 
     emit ClaimMade(msg.sender, currentSeasonId, amount, totalPayout);
   }
