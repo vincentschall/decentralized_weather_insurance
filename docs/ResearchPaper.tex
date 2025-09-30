@@ -236,27 +236,27 @@
     A smart contract manages issuance, pooling and payouts.
     The design reduces administrative overhead and shifts pricing and risk allocation to a market-based mechanism.
 
-    \subsection{Problem and Customer Segments}
+    \subsection{Problem and Customer Segments}\label{subsec:problem-and-customer-segments}
     Smallholder farmers in Kenya face recurrent rainfall shocks but lack access to formal insurance.
     High distribution costs, weak trust in insurersan d limited actuarial data block traditional coverage.
     At the same time, impact-oriented investors seek transparent, uncorrelated instruments.
     The marketplace connects both groups, while cooperatives, NGOs and telcos provide distribution and trust infrastructure ~\parencite{cole2013barriers}.
 
-    \subsection{Value Propositions}
+    \subsection{Value Propositions}\label{subsec:value-propositions}
     \begin{itemize}
         \item \textbf{Farmers}: affordable coverage, predictable payouts triggered by rainfall indices, and mobile transactions via M-Pesa.
         \item \textbf{Investors}: standardized exposure to agricultural risk with measurable yield, diversifying traditional portfolios.
         \item \textbf{Partners}: reduced leakage and transparent performance metrics for evaluation and reporting.
     \end{itemize}
 
-    \subsection{Solution Design}
+    \subsection{Solution Design}\label{subsec:solution-design}
     Farmers purchase ERC-20 tokens as digital proof of coverage.
     Investors deposit capital into an ERC-4626 vault and receive fungible shares.
     Oracle-based rainfall indices determine payout eligibility.
     Premiums and yields are set through a seasonal sealed-bid uniform-price auction functioning as a prediction market: farmer bids and investor offers jointly reveal the market-implied drought probability $\hat{\pi}$ and equilibrium margin~\parencite{hanson2003market,wolfers2004prediction}.
     The frontend abstracts blockchain logic and integrates fiat--stablecoin conversion.
 
-    \subsection{Revenue Model}
+    \subsection{Revenue Model}\label{subsec:revenue-model}
     Premiums collected from farmers fund the risk pool.
     Investor returns correspond to the surplus of premiums over payouts, distributed proportionally through vault shares.
     The auction internalizes both risk expectations and operational costs into the equilibrium premium, creating endogenous funding for the platform.
@@ -270,25 +270,25 @@
     Because surpluses are automatically reinvested into vault NAV, long-term investors experience a compounding effect similar to conventional finance.
     Payouts are not broadcasted indiscriminately; they require a minimal on-chain claim, after which the contract settles automatically if the rainfall index threshold is breached (see Claim Process and Payout Logic).
 
-    \subsection{Cost Structure}
+    \subsection{Cost Structure}\label{subsec:cost-structure}
     Key cost drivers are oracle services, secure data feeds, system audits, regulatory engagement, payment integration, and farmer outreach.
     Automation keeps administrative costs lower than in conventional microinsurance.
     Economies of scale further reduce marginal costs as the pool and user base expand.
 
-    \subsection{Channels and Partnerships}
+    \subsection{Channels and Partnerships}\label{subsec:channels-and-partnerships}
     Cooperatives, NGOs, and agro-dealers provide farmer onboarding and trust.
     M-Pesa integration allows direct premium and payout transactions.
     Oracle providers deliver rainfall indices ~\parencite{egberts2017oracle}.
     Reinsurers supply capacity for tail risk.
     Regulators and development agencies support compliance and market acceptance.
 
-    \subsection{Scalability}
+    \subsection{Scalability}\label{subsec:scalability}
     The model can expand from Kenyan maize to other crops, regions, and perils such as livestock mortality or flood.
     ERC standards allow interoperability with DeFi protocols and secondary markets for risk exposure.
     The prediction-market mechanism improves with scale, as more participants and data sources sharpen price discovery.
     Modular system design supports adjustments across regulatory environments.
 
-    \subsection{Claim Process and Payout Logic}
+    \subsection{Claim Process and Payout Logic}\label{subsec:claim-process-and-payout-logic}
     Farmers must file a minimal on-chain claim (notice-of-loss) during a specified window $[t_0,t_1]$ after oracle publication.
     The contract verifies:
     \begin{enumerate}
