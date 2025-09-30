@@ -228,37 +228,35 @@
     Early blockchain pilots such as Etherisc's indicate promising pathways to reduce administrative costs and improve transparency, but scaling such solutions will depend on robust data infrastructure, effective oracles, and farmer-centric design.
     Overall, the market reflects both a large protection gap and a significant opportunity, as innovative, technology-enabled models that combine affordability, transparency, and mobile integration have the potential to transform risk management for Kenya's smallholder farmers.	
 
-    \section{Solution Design}\label{sec:solution design}
+    \section{Business Model}\label{sec:business-model}
 
-    \subsection{Business Model}\label{subsec:business-model}
-
-    \subsubsection{Overview}
+    \subsection{Overview}\label{subsec:overview}
     The Rainy Day Fund is a two-sided parametric insurance marketplace.
     Farmers obtain seasonal drought protection through ERC-20 policy tokens, while investors provide liquidity to an ERC-4626 vault and receive proportional shares.
     A smart contract manages issuance, pooling and payouts.
     The design reduces administrative overhead and shifts pricing and risk allocation to a market-based mechanism.
 
-    \subsubsection{Problem and Customer Segments}
+    \subsection{Problem and Customer Segments}
     Smallholder farmers in Kenya face recurrent rainfall shocks but lack access to formal insurance.
     High distribution costs, weak trust in insurersan d limited actuarial data block traditional coverage.
     At the same time, impact-oriented investors seek transparent, uncorrelated instruments.
     The marketplace connects both groups, while cooperatives, NGOs and telcos provide distribution and trust infrastructure ~\parencite{cole2013barriers}.
 
-    \subsubsection{Value Propositions}
+    \subsection{Value Propositions}
     \begin{itemize}
         \item \textbf{Farmers}: affordable coverage, predictable payouts triggered by rainfall indices, and mobile transactions via M-Pesa.
         \item \textbf{Investors}: standardized exposure to agricultural risk with measurable yield, diversifying traditional portfolios.
         \item \textbf{Partners}: reduced leakage and transparent performance metrics for evaluation and reporting.
     \end{itemize}
 
-    \subsubsection{Solution Design}
+    \subsection{Solution Design}
     Farmers purchase ERC-20 tokens as digital proof of coverage.
     Investors deposit capital into an ERC-4626 vault and receive fungible shares.
     Oracle-based rainfall indices determine payout eligibility.
     Premiums and yields are set through a seasonal sealed-bid uniform-price auction functioning as a prediction market: farmer bids and investor offers jointly reveal the market-implied drought probability $\hat{\pi}$ and equilibrium margin~\parencite{hanson2003market,wolfers2004prediction}.
     The frontend abstracts blockchain logic and integrates fiat--stablecoin conversion.
 
-    \subsubsection{Revenue Model}
+    \subsection{Revenue Model}
     Premiums collected from farmers fund the risk pool.
     Investor returns correspond to the surplus of premiums over payouts, distributed proportionally through vault shares.
     The auction internalizes both risk expectations and operational costs into the equilibrium premium, creating endogenous funding for the platform.
@@ -272,25 +270,25 @@
     Because surpluses are automatically reinvested into vault NAV, long-term investors experience a compounding effect similar to conventional finance.
     Payouts are not broadcasted indiscriminately; they require a minimal on-chain claim, after which the contract settles automatically if the rainfall index threshold is breached (see Claim Process and Payout Logic).
 
-    \subsubsection{Cost Structure}
+    \subsection{Cost Structure}
     Key cost drivers are oracle services, secure data feeds, system audits, regulatory engagement, payment integration, and farmer outreach.
     Automation keeps administrative costs lower than in conventional microinsurance.
     Economies of scale further reduce marginal costs as the pool and user base expand.
 
-    \subsubsection{Channels and Partnerships}
+    \subsection{Channels and Partnerships}
     Cooperatives, NGOs, and agro-dealers provide farmer onboarding and trust.
     M-Pesa integration allows direct premium and payout transactions.
     Oracle providers deliver rainfall indices ~\parencite{egberts2017oracle}.
     Reinsurers supply capacity for tail risk.
     Regulators and development agencies support compliance and market acceptance.
 
-    \subsubsection{Scalability}
+    \subsection{Scalability}
     The model can expand from Kenyan maize to other crops, regions, and perils such as livestock mortality or flood.
     ERC standards allow interoperability with DeFi protocols and secondary markets for risk exposure.
     The prediction-market mechanism improves with scale, as more participants and data sources sharpen price discovery.
     Modular system design supports adjustments across regulatory environments.
 
-    \subsubsection{Claim Process and Payout Logic}
+    \subsection{Claim Process and Payout Logic}
     Farmers must file a minimal on-chain claim (notice-of-loss) during a specified window $[t_0,t_1]$ after oracle publication.
     The contract verifies:
     \begin{enumerate}
@@ -319,7 +317,7 @@
     Farmer inverse demand is $p_d(x)$; investor supply is $C_s(R)$.
     Required reserves are $C_{\mathrm{req}}(x)$, with prudential utilization factor $\theta \in (0,1]$.
 
-    \subsubsection{Auction Process and Clearing Mechanism}
+    \subsection{Auction Process and Clearing Mechanism}\label{subsec:auction-process-and-clearing-mechanism}
 
     At the beginning of each season, farmers submit bids $(q_i, p_i)$ and investors submit $(k_j, R_j)$.
     Bids are committed via a commit--reveal protocol ~\parencite{blum1983coinflipping,buterin2015commit,parkes2014mechanism}, ensuring confidentiality until revelation.
@@ -345,7 +343,7 @@
     q_i^{\text{alloc}} = \rho q_i, \qquad \rho = \frac{x^\ast}{\sum_i q_i}.
     \]
 
-    \subsubsection{Premium Decomposition and the Risk Margin}
+    \subsection{Premium Decomposition and the Risk Margin}\label{subsec:premium-decomposition-and-the-risk-margin}
 
     The clearing premium decomposes into expected actuarial loss and a margin:
     \[
@@ -370,7 +368,7 @@
     Operational costs $F$ are deducted transparently by the contract before distribution.
         They reduce net cashflows, but investors anticipate them when bidding~\parencite{bowers1997actuarial}.
 
-    \subsubsection{Joint Market Equilibrium}
+    \subsection{Joint Market Equilibrium}\label{subsec:joint-market-equilibrium}
 
     Auction outcomes satisfy equilibrium conditions:
     \[
@@ -393,7 +391,7 @@
     providing a tractable approximation for forecasting~\parencite{angeris2020improved,shiller2003bond}.
     This curve is used \emph{only for analysis}, not for live pricing.
 
-    \subsubsection{Allocation Rules and Fairness}
+    \subsection{Allocation Rules and Fairness}\label{subsec:allocation-rules-and-fairness}
 
     Pro-rata rationing ensures envy-freeness when demand exceeds feasible capacity:
     \[
@@ -403,7 +401,7 @@
     Alternative rules (cutoffs, discriminatory allocations, priority mechanisms) were rejected as less efficient or less fair.
     Full coverage with pro-rata allocation mobilizes all feasible capacity while minimizing envy.
 
-    \subsubsection{Limitations and Future Research}
+    \subsection{Limitations and Future Research}\label{subsec:limitations-and-future-research}
 
     Limitations remain.
     Functional forms for demand, supply and bonding curves require calibration. $\hat{\pi}$ must be validated against external actuarial or climate models.
