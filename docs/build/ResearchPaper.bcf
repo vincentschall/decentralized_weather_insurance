@@ -2412,7 +2412,7 @@
     <bcf:citekey order="31" intorder="2">MinistryOfAgriculture2023</bcf:citekey>
     <bcf:citekey order="32" intorder="1">Artemis2017</bcf:citekey>
     <bcf:citekey order="32" intorder="2">BASIS2017</bcf:citekey>
-    <bcf:citekey order="33" intorder="1">AfricanClimateFoundation2024</bcf:citekey>
+    <bcf:citekey order="33" intorder="1">AfricanClimate2024</bcf:citekey>
     <bcf:citekey order="33" intorder="2">MinistryOfAgriculture2023</bcf:citekey>
     <bcf:citekey order="34" intorder="1">Artemis2017</bcf:citekey>
     <bcf:citekey order="34" intorder="2">WorldBank2022</bcf:citekey>
@@ -2429,8 +2429,23 @@
     <bcf:citekey order="43" intorder="1">ADA_OKOFinance2021</bcf:citekey>
     <bcf:citekey order="44" intorder="1">Jensen2016</bcf:citekey>
     <bcf:citekey order="45" intorder="1">Janzen2020</bcf:citekey>
-    <bcf:citekey order="46" intorder="1">ERC1155</bcf:citekey>
-    <bcf:citekey order="47" intorder="1">AggregatorV3Interface</bcf:citekey>
+    <bcf:citekey order="46" intorder="1">cole2013barriers</bcf:citekey>
+    <bcf:citekey order="47" intorder="1">hanson2003market</bcf:citekey>
+    <bcf:citekey order="47" intorder="2">wolfers2004prediction</bcf:citekey>
+    <bcf:citekey order="48" intorder="1">cummins2009catastrophe</bcf:citekey>
+    <bcf:citekey order="49" intorder="1">egberts2017oracle</bcf:citekey>
+    <bcf:citekey order="50" intorder="1">wilson1979auctions</bcf:citekey>
+    <bcf:citekey order="50" intorder="2">ausubel2002demand</bcf:citekey>
+    <bcf:citekey order="51" intorder="1">blum1983coinflipping</bcf:citekey>
+    <bcf:citekey order="51" intorder="2">buterin2015commit</bcf:citekey>
+    <bcf:citekey order="51" intorder="3">parkes2014mechanism</bcf:citekey>
+    <bcf:citekey order="52" intorder="1">bowers1997actuarial</bcf:citekey>
+    <bcf:citekey order="53" intorder="1">mascolell1995microeconomic</bcf:citekey>
+    <bcf:citekey order="53" intorder="2">varian1992micro</bcf:citekey>
+    <bcf:citekey order="54" intorder="1">angeris2020improved</bcf:citekey>
+    <bcf:citekey order="54" intorder="2">shiller2003bond</bcf:citekey>
+    <bcf:citekey order="55" intorder="1">ERC1155</bcf:citekey>
+    <bcf:citekey order="56" intorder="1">AggregatorV3Interface</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">
