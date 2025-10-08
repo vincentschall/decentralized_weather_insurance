@@ -172,7 +172,7 @@ export default function TestingInterface() {
 				newBalances[key] = {
 					usdcBalance: Number(ethers.formatUnits(usdcBalance, 6)),
 					policyTokens: Number(policyTokens),
-					shares: Number(ethers.formatUnits(shares, 18))
+					shares: Number(ethers.formatUnits(shares, 6))
 				};
 			}
 			setBalances(newBalances);
