@@ -1,9 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { RainyDayFund, MockUSDC, MockWeatherOracle, SeasonPolicyToken } from "../typechain-types";
-import { expect } from "chai";
-import { ethers } from "hardhat";
-import { RainyDayFund, MockUSDC, MockWeatherOracle, SeasonPolicyToken } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("RainyDayFund", function () {
