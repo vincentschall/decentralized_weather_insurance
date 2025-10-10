@@ -1,3 +1,10 @@
+<div style="text-align: center;">
+
+![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white)
+![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
+
+</div>
+
 # Decentralized Weather Insurance
 
 Group project (09/2025): EVM-based smart contract with react app for the blockchain challenge @University of Basel.
@@ -28,10 +35,3 @@ will result in a critical break of the program. To use the frontend as intended,
 the riskpool. Check the research paper for a more detailed breakdown.
 
 https://github.com/user-attachments/assets/f12aa07f-a861-4744-ab3f-5aa6d95f8485
-
-<div style="text-align: center;">
-
-![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white)
-![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
-
-</div>
