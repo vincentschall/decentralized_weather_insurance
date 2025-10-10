@@ -744,8 +744,7 @@
 		Some information about the \texttt{SeasonPolicyToken}, \texttt{MockUSDC} and \texttt{MockWeatherOracle} contracts can be found in the appendix~\ref{sec:contract-analysis}.
 
 
-
-		\subsection{Development Tools \& Infrastructure}\label{subsec:development-tools-infrastructure}
+        \subsection{Development Tools \& Infrastructure}\label{subsec:development-tools-infrastructure}
 		The development process utilized a modern toolchain centered around the Hardhat framework for smart contract development, deployment, and testing. 
 		Initial contract development was performed in the Remix IDE, which enabled rapid deployment and manual testing directly in the browser without requiring local setup. 
 		After a working prototype was established, development transitioned to Hardhat, providing a more robust environment with a local blockchain that simulates real network conditions. 
@@ -785,7 +784,39 @@
 			\label{fig:test-set-up}
 		\end{figure}
 
-		\subsection{Outlook \& Next Steps}\label{subsec:outlook}
+        \subsection{Problems and Remaining Questions}\label{subsec:problems-and-remaining-questions}
+
+        In implementing the RainyDayFund contract, we encountered a subtle interaction between policy purchases and investor deposits, stemming from the OpenZeppelin ERC4626 vault's design for handling external asset inflows.
+
+        Specifically, when policies are purchased before any investments, the USDC premiums are transferred directly into the vault via \texttt{buyPolicy()}, increasing \texttt{totalAssets()} without minting corresponding RDIS shares.
+        This leaves \texttt{totalSupply()} at zero.
+
+        Subsequent calls to \texttt{invest()}, invoking \texttt{deposit()}, rely on ERC4626's \texttt{convertToShares()} function to compute share issuance:
+
+        \[
+            \text{shares} = \text{assets} \times \frac{\text{totalSupply()} + 10^{\text{decimals offset}}}{\text{totalAssets()} + 1}
+        \]
+
+        where the decimals offset is $12$ (RDIS at 18 decimals, USDC at 6).
+        The $10^{12}$ term acts as a ``virtual supply'' to bootstrap fair pricing and normalize decimals.
+
+        With no prior shares, this heavily dilutes the first deposit: for a 1~USDC investment after 9~USDC in premiums, shares $\approx 1.11 \times 10^{11}$ raw units, or $\sim 1.11 \times 10^{-7}$ whole RDIS tokens---appearing as ``quasi-null'' in our React UI.
+        Later investments face similar dilution until real supply dominates the virtual offset.
+
+        This is not a bug but intended ERC4626 behavior (per EIP-4626) to prevent windfalls from external transfers, ensuring atomic fairness: depositors receive exactly their assets' worth upon immediate redeem.
+        However, it creates order-dependence in our flow---invest-first avoids the issue---and cosmetic UI problems, misaligning with our goal of seamless pooling where premiums back the fund and investments capture retained upside (NAV $> 1$ on low claims) or share dilution (NAV $< 1$ on payouts).
+
+        To address this, we propose:
+        \begin{enumerate}
+            \item In \texttt{buyPolicy()}, after transferring premiums, mint proportional protocol shares to the owner at the bootstrap rate ($10^{12}$ per USDC), ensuring whole-scale issuance for all deposits.
+            \item In \texttt{redeemShares()} (WITHDRAW phase only), auto-trigger a one-time redemption of protocol shares on the first investor withdrawal, donating proceeds back as external assets (no new shares minted).
+        \end{enumerate}
+        This realizes upside trustlessly: the first withdrawer enables full NAV for all, with negligible extra gas ($\sim$20k).
+
+        Trade-offs include: if no withdrawals occur, retained premiums remain unrealized (fund rolls over); concurrent first withdrawals are serialized fairly by Ethereum.
+        We defer implementation due to time constraints and audit needs, opting to document and avoid the order in deployment.
+
+        \subsection{Outlook \& Next Steps}\label{subsec:outlook}
 		The most important next step is the integration of real Chainlink oracles for weather data. 
 		The current implementation uses mock data, but production requires reliable, tamper-proof weather information from multiple sources. 
 		Deployment on a real network is also necessary. 
