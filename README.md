@@ -1,4 +1,4 @@
-<div style="text-align: center;">
+<div align="center">
 
 ![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white)
 ![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
