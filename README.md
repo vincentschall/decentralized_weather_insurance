@@ -27,6 +27,8 @@ Due to the implementation of the ERC4626 standard, buying a policy first (when t
 will result in a critical break of the program. To use the frontend as intended, start by investing into 
 the riskpool. Check the research paper for a more detailed breakdown.
 
+https://github.com/user-attachments/assets/f12aa07f-a861-4744-ab3f-5aa6d95f8485
+
 <div style="text-align: center;">
 
 ![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white)
