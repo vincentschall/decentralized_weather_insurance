@@ -848,9 +848,32 @@
 		While the current local testing setup provides an effective development environment, testing under real network conditions is essential to uncover issues that may not appear in isolated simulations.
 
 		\section{Conclusion}\label{sec:conclusion}
-		\ldots
+		Blockchain-enabled parametric microinsurance is not a silver bullet for climate risk, but this work shows it can remove long-standing frictions that kept protection out of reach for Kenyan smallholders.
+        The approach begins from a simple premise: if pricing, capital formation, and payouts are automated around objective weather signals, then insurance can become cheaper, faster, and more trustworthy.
+        The design couples a sealed-bid, uniform-price mechanism for seasonal price discovery with tokenized coverage and a pooled ERC-4626 vault, and a test-covered prototype was implemented that executes end-to-end flows with deterministic, auditable logic.
 
-		The entire project can be found in the \href{https://github.com/vincentschall/decentralized_weather_insurance}{Github repository}.
+		Three results stand out.
+
+        First, automation meaningfully reduces operational complexity: premiums, coverage, and payouts are settled by code with transparent rules and verifiable data, minimizing discretion and delays.
+
+        Second, market-based clearing aligns farmer affordability and investor return ex ante, translating beliefs about drought into prices and capacity in a way that scales with participation.
+
+        Third, modularity matters: by standardizing payments, tokens, and oracles, the system can plug into mobile rails (e.g., M-Pesa bridges), real weather feeds, and reinsurance capacity without redesigning core contracts.
+
+		Important limitations remain.
+        Basis risk must be reduced through better indices (multi-source rainfall, satellite vegetation, crop models) and local calibration.
+        Real oracle infrastructure, L2 deployment, gas optimization, and upgrade paths are prerequisites for production.
+        Governance and consumer protection (fair disclosures, dispute windows, orderly season transitions) must be specified and audited.
+        Finally, the ERC-4626 interaction between external premiums and share issuance requires a production-grade policy to avoid confusing UX and to preserve fair NAV accounting.
+
+		The path forward is practical and testable: pilot one crop and county with a cooperative partner, integrate Chainlink (or equivalent) multi-source weather feeds, settle on a conservative claim threshold with an appeal buffer, and distribute through trusted local channels.
+        Use donor or public co-funding to subsidize early seasons, measure realized basis risk and take-up, and iterate the auction parameters with real demand data.
+        On-chain transparency should be paired with mobile-first UX and multilingual support to build confidence.
+
+		In sum, the Rainy-Day Fund demonstrates that decentralized infrastructure can make parametric insurance simpler, fairer, and more credible for farmers like Mary—converting climate shocks into predictable cashflows when they matter most.
+        With robust data, careful governance, and field partnerships, the prototype can evolve into a resilient safety net that scales beyond a single crop or region while remaining transparent and accountable by design.
+
+	    The entire project can be found in the \href{https://github.com/vincentschall/decentralized_weather_insurance}{Github repository}.
 
 		% ---------- Bibliography ----------
 		\printbibliography
