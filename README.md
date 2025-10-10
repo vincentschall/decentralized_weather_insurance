@@ -21,7 +21,13 @@ If this is your first run, go into /client and run `npm install`. Then do the sa
 
 **In both cases,** go to the project root and run `node cleanup.js` to remove old files after running the program. Optionally, run `npx hardhat clean` in the contract folder to be extra sure.
 
-<div align="center">
+## Important sidenote
+
+Due to the implementation of the ERC4626 standard, buying a policy first (when the amount of currency in the riskpool is still 0),
+will result in a critical break of the program. To use the frontend as intended, start by investing into 
+the riskpool. Check the research paper for a more detailed breakdown.
+
+<div style="text-align: center;">
 
 ![Ethereum](https://img.shields.io/badge/Ethereum-ETH-3C3C3D?logo=ethereum&logoColor=white)
 ![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
