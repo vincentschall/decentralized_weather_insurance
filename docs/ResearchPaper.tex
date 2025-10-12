@@ -19,6 +19,20 @@
 \usepackage{listings}
 \usepackage[style=authoryear,maxcitenames=2,backend=biber]{biblatex}
 \usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{array}
+
+% Typography tuning to reduce bad breaks
+\microtypesetup{protrusion=true, expansion=true}
+\tolerance=2000
+\emergencystretch=3em
+\hyphenpenalty=1000
+\exhyphenpenalty=1000
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\interfootnotelinepenalty=10000
+\raggedbottom
 
 % ---------- Listings configuration for code highlighting ----------
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -173,9 +187,9 @@
 		In addition, blockchain can connect easily with mobile wallets, allowing farmers in remote or underserved areas to access insurance services directly~\parencite{DominguezAnguianoParte2024}.
 
 		\subsection{Benefits for Parametric \& Microinsurance}\label{subsec:benefits-for-parametric-&-microinsurance}
-		Applying blockchain to parametric insurance enables fully automated, event-based payouts, reducing basis risk, enhancing speed, and improving trust among stakeholders~\parencite{Chainlink2021, ParametricInsured2025, Shetty2022}.
+		Applying blockchain to parametric insurance enables automated, event-based payouts, reducing basis risk, enhancing speed, and improving trust among stakeholders~\parencite{Chainlink2021, ParametricInsured2025, Shetty2022}.
 		For microinsurance, blockchain improves cost efficiency by lowering policy management costs, making it possible to expand coverage to underserved farmers and to explore flexible pricing models~\parencite{DominguezAnguianoParte2024, ResearchGate2023}.
-		Real-world examples such as Etherisc and Arbol already show how this can work in practice, with thousands of farmers receiving instant payouts without the need for manual claims assessments~\parencite{Alsdorf2024, DominguezAnguianoParte2024, ParametricInsured2025}.
+		Real-world examples such as Etherisc and Arbol already show how this can work in practice, with thousands of farmers receiving rapid payouts without the need for manual claims assessments~\parencite{Alsdorf2024, DominguezAnguianoParte2024, ParametricInsured2025}.
 		The combination of decentralization, automation, and verifiable data ensures that parametric microinsurance is transparent, scalable, and trustworthy~\parencite{Shetty2022}.
 
 		\section{Target Market \& Stakeholders}\label{sec:targetmarket}
@@ -238,7 +252,7 @@
 
 		\subsection{Problem and Customer Segments}\label{subsec:problem-and-customer-segments}
 		Smallholder farmers in Kenya face recurrent rainfall shocks but lack access to formal insurance.
-		High distribution costs, weak trust in insurersan d limited actuarial data block traditional coverage.
+		High distribution costs, weak trust in insurers and limited actuarial data block traditional coverage.
 		At the same time, impact-oriented investors seek transparent, uncorrelated instruments.
 		The marketplace connects both groups, while cooperatives, NGOs and telcos provide distribution and trust infrastructure ~\parencite{cole2013barriers}.
 
@@ -253,8 +267,8 @@
 		Farmers purchase ERC-20 tokens as digital proof of coverage.
 		Investors deposit capital into an ERC-4626 vault and receive fungible shares.
 		Oracle-based rainfall indices determine payout eligibility.
-		Premiums and yields are set through a seasonal sealed-bid uniform-price auction functioning as a prediction market: farmer bids and investor offers jointly reveal the market-implied drought probability $\hat{\pi}$ and equilibrium margin~\parencite{hanson2003market,wolfers2004prediction}.
-		The frontend abstracts blockchain logic and integrates fiat--stablecoin conversion.
+		Premiums and yields are modeled via a seasonal sealed-bid uniform-price auction functioning as a prediction market: farmer bids and investor offers jointly reveal the market-implied drought probability $\hat{\pi}$ and equilibrium margin~\parencite{hanson2003market,wolfers2004prediction}. In the current prototype, the premium is set by the contract owner at season start (no on-chain auction).
+		The frontend abstracts blockchain logic and is designed for future fiat--stablecoin conversion integration.
 
 		\subsection{Revenue Model}\label{subsec:revenue-model}
 		Premiums collected from farmers fund the risk pool.
@@ -296,11 +310,12 @@
 			\item uniqueness: no prior claim from the same address/epoch,
 			\item eligibility: oracle index $I$ satisfies $I \le \tau$.
 		\end{enumerate}
-		If (1)--(3) hold, the contract transfers $qL$ (or pro-rata if rationing applies) from the vault to the claimant’s wallet; otherwise the call reverts.
-		Operational costs $F$ are deducted before distribution.
+		If (1)--(3) hold, the contract transfers $qL$ to the claimant’s wallet, otherwise the call reverts. In the analytical model, pro-rata rationing and operator fees can be applied; these are not enforced in the current prototype.
 		No off-chain adjusters or discretionary assessments occur.\footnote{A claim call is required to (i) prevent automatic transfers to inactive or lost wallets, (ii) avoid dust payouts below gas costs, and (iii) let farmers select their preferred payout rail (e.g. M-Pesa bridge).}
 
-		\section{Mechanism Design}\label{sec:mechanism design}
+		\section{Mechanism Design}\label{sec:mechanism-design}
+
+		\noindent\textit{Scope note: The following mechanism specifies the market design used in our economic model. The prototype does not implement on-chain bidding (commit--reveal) or automated auction clearing; seasonal premiums are owner-set in the current implementation.}
 
 		Premiums and investor yields are discovered through a pre-season sealed-bid uniform-price auction.
 		This single mechanism acts as a prediction market for drought risk, while remaining implementable under smallholder constraints ~\parencite{wilson1979auctions,ausubel2002demand}.
@@ -414,26 +429,58 @@
 		\section{Implementation}\label{sec:implementation}
 		Overview of implementation goals, strategy and architecture.
 
-		The goal for this project was providing a showcase prototype .
-		Therefore, the focus was on providing the most important features, a neat, easy UI and a good test-setup to showcase the functionality and laying the groundwork for possible extensions.
-		These extensions and some of the more advanced features that were not provided in the prototype will be discussed in sections~\ref{subsec:qa-security} and~\ref{subsec:outlook}
+		The goal for this project was providing a showcase prototype.
+		Therefore, the focus was on providing the most important features, a neat, easy UI and a good test setup to showcase the functionality and laying the groundwork for possible extensions.
+		These extensions and some of the more advanced features that were not provided in the prototype will be discussed in sections~\ref{subsec:qa-security} and~\ref{subsec:outlook}.
 		It is important to note that the project is not a complete MVP (minimum viable product), due to the constraints when it comes to funding for example Chainlink as provider for weather data or using actual currency as a payment method.
 
+		% New: concise prototype scope table
+		\subsection{Prototype Scope: Model vs. Implementation}\label{subsec:model-vs-prototype}
+		To avoid ambiguity, this subsection summarizes the economic model versus the implemented prototype.
+		\begin{table}[htbp]
+		\centering
+		\caption{Economic Model vs. Prototype Implementation}
+		\label{tab:model-vs-prototype}
+		\begin{tabular}{|>{\raggedright\arraybackslash}p{0.30\textwidth}|>{\raggedright\arraybackslash}p{0.32\textwidth}|>{\raggedright\arraybackslash}p{0.32\textwidth}|}
+		\hline
+		\textbf{Feature} & \textbf{Economic Model} & \textbf{Prototype (This Repo)} \\
+		\hline
+		Premium discovery & Sealed-bid uniform-price auction (commit--reveal) & Owner-set per season (no on-chain auction) \\
+		\hline
+		Claims flow & Minimal claim; pro-rata possible; fees deducted & Explicit claim call; no pro-rata; no fees; revert if insufficient funds \\
+		\hline
+		Payout automation & Event-based automatic settlement & Automated settlement upon claim call when oracle threshold met \\
+		\hline
+		Oracle data & Chainlink or equivalent, multi-source & Mock oracle (AggregatorV3Interface-compatible) \\
+		\hline
+		Policy tokens & ERC-20 per season & ERC-20 per season (transferable) \\
+		\hline
+		Risk pool & ERC-4626 vault & ERC-4626 vault implemented \\
+		\hline
+		Investor redemption & Flexible per design & redeemShares() in WITHDRAW phase \\
+		\hline
+		Fiat/mobile rails & M-Pesa bridge integration & Not implemented (UI designed for future integration) \\
+		\hline
+		Reinsurance & Optional & Not implemented \\
+		\hline
+		Deployment & Public testnet/mainnet & Local Hardhat network for prototype \\
+		\hline
+		\end{tabular}
+		\end{table}
 
 		\subsection{Development Process \& Strategy}\label{subsec:dev-strategy}
 		The strategy for the implementation was largely based on a learning process.
-		At first the focus was mainly on exploring the basics of Solidity based Smart Contracts and creating an early working prototype.
-		Once this was achieved the focus shifted to code quality, finding efficient and well established solutions to tackle current challenges and at the end, integrating all of this into an easy-to-use UI .
-
+		At first the focus was mainly on exploring the basics of Solidity-based smart contracts and creating an early working prototype.
+		Once this was achieved the focus shifted to code quality, finding efficient and well established solutions to tackle current challenges and, at the end, integrating all of this into an easy-to-use UI.
 
 		The most important guidelines and ideas for the implementation were:
 
 		\begin{enumerate}[1]
 			\item \textbf{Division of Work:} The work was divided mostly into two parts.
 				One part was the overarching architecture and product design, including specifically the smart contract development using Solidity, as well as researching existing libraries and standards to implement and use.
-				The other part, equally important was researching and setting up the tools and frameworks for everything else: The project and testing setup using Hardhat and writing the actual test-code, implementing the UI, using React, Managing the Repository, and bug-fixing.
+				The other part, equally important, was researching and setting up the tools and frameworks for everything else: the project and testing setup using Hardhat and writing the actual test code, implementing the UI using React, managing the repository, and bug fixing.
 				This division was important for numerous reasons, but especially because it allowed for mutual verification and simultaneously the possibility to truly focus on specific topics.
-			\item \textbf{Testing Setup:} The Testing-Setup within Hardhat and using Node.js made finding bugs and testing after changes much more efficient and also allows for neat and compact showcases of the features and working prototype code.
+			\item \textbf{Testing Setup:} The testing setup within Hardhat and using Node.js made finding bugs and testing after changes much more efficient and also allows for neat and compact showcases of the features and working prototype code.
 				An excerpt from this testing setup and what it shows can be seen in figure~\ref{fig:test-set-up}.
 			\item \textbf{Research:} Research was an important, continuous process throughout the project, for finding technical solutions but also possible issues with the current state of the project.
 			\item \textbf{Usage of AI:} AI was used throughout the project for research purposes, when trying to find fitting libraries, tools and standards, as well as making repetitive tasks, like writing test code more efficient.
@@ -445,10 +492,10 @@
 		The strategy during the development process was to implement based on an objective hierarchy:
 
 		\begin{enumerate}[1]
-			\item Working Smart Contract with deterministic payouts
+			\item Working smart contract with deterministic payouts
 			\item Investment logic
 			\item Investor incentive model (yield / compound interest)
-			\item Tests and Code quality
+			\item Tests and code quality
 			\item Working frontend for showcases and manual testing
 			\item \ldots
 		\end{enumerate}
@@ -462,7 +509,7 @@
 		It is designed to be extensible for integration with oracles (such as Chainlink), \texttt{ERC20 tokens} as payment and is integrated within a frontend built with React.
 		The architecture emphasizes modularity, and ease of use for both farmers and investors, as well as neat and easy testing and showcasing.
 
-		\begin{figure}[H]
+		\begin{figure}[htbp]
 			\centering
 			\includegraphics[scale=0.3]{graphics/Architectural_Overview}
 			\caption{Architectural Overview \\ \textit{Source: Author's own.}}
@@ -470,10 +517,10 @@
 		\end{figure}
 
 		As shown in figure~\ref{fig:architecture} the users (both farmers and investors) own a crypto wallet and connect this to the frontend.
-		The frontend then allows them to easily invest or buy policies for the current season with their crypto funds, by programmatically interacting with the Smart Contract.
-		The smart contract then mints a policy token for farmers or deposits the investors funds in the vault, so that they can receive a yield.
-		All funds are stored in a Risk-Pool (in our case the ERC4626 vault).
-		The farmers can claim their policies at the end of the season and, if all conditions are met, i.e.\ the weather oracle gets and returns weather data, below the threshold and the farmer making the claim actually owns the policy tokens, receive their coverage funds.
+		The frontend then allows them to easily invest or buy policies for the current season with their crypto funds, by programmatically interacting with the smart contract.
+		The smart contract then mints a policy token for farmers or deposits the investors' funds in the vault, so that they can receive a yield.
+		All funds are stored in a risk pool (in our case the ERC-4626 vault).
+		The farmers can claim their policies at the end of the season and, if all conditions are met, i.e. the weather oracle returns weather data below the threshold and the farmer making the claim actually owns the policy tokens, receive their coverage funds.
 		Investors may withdraw their funds, receiving all the accumulated yield.
 		The \texttt{Payout Engine} symbolizes the possibility of transferring out funds from the crypto wallet to widely used mobile-money services, like M-Pesa.
 		This is already a well established process and not included in the project itself, should however be noted, because it allows the farmers to actually immediately use their payouts in their everyday life.
@@ -481,7 +528,7 @@
 		The concrete timeline for the process is based on the crop season and has 5 phases:
 		\begin{enumerate}
 			\item \textbf{Active Phase:} In the active phase policies can be bought and investments can be made.
-				The premium for the current season is already set at the beginning through the auction-based system explained in section~\ref{sec:mechanism design} \textcolor{red}{check wether this links correctly!}.
+				The premium for the current season is set at the beginning by the owner.
 				No claims or withdrawals can be made during this phase.
 			\item \textbf{Inactive Phase:} Now the policies can no longer be bought, but investments can still be made.
 				This allows for a speculative market for the insurance policies, while keeping the possibility of introducing more liquidity from capital investors.
@@ -496,29 +543,29 @@
 		\subsection{Smart Contract Design (Micro)}\label{subsec:smart-contract-design}
 		The project is built around a Solidity smart contract using the Ethereum Virtual Machine.
 		This central RainyDayFund contract can be called using the front end and holds all the exposed functionality for the consumer.
-		Investors use the \texttt{invest()} and \texttt{withdraw()} methods while insurees can buy and claim their policies in batches using the \texttt{buyPolicy()} and \texttt{claimPolicies()} functions.
-		The contract leverages the ERC1155 token standard for policy tokens, enabling efficient batch operations and flexible policy management.
+		Investors use the \texttt{invest()} and \texttt{redeemShares()} methods while insurees can buy and claim their policies in batches using the \texttt{buyPolicy()} and \texttt{claimPolicies()} functions.
+		The contract leverages ERC-20 season policy tokens, enabling simple transfers and season-scoped policy management.
 
 		As shown in Figure~\ref{fig:initial-contract-design}, the initial contract made use of the \texttt{1155 token standard} for the \texttt{policyTokens}, to take advantage of the cost-efficient batch operations~\parencite{ERC1155}.
-		To help with testing the (Mock)-MUSCD was created, implementing the ERC20 interface, to emulate the behavior of common stablecoins like USDC, which are used as payment and funding for the riskpool.
-		This allowed for the free minting and full control over the coins and made testing the functionality of the main contract possible, even within the bounds of Remix VM .
-		Therefore, testing was quicker and easier at the beginning, without the need to always deploy on the Sepolia Testnet or an immediate, complete setup, for example with hardhat.
+		To help with testing the (Mock) USDC was created, implementing the ERC20 interface, to emulate the behavior of common stablecoins like USDC, which are used as payment and funding for the risk pool.
+		This allowed for the free minting and full control over the coins and made testing the functionality of the main contract possible, even within the bounds of Remix VM.
+		Therefore, testing was quicker and easier at the beginning, without the need to always deploy on the Sepolia Testnet or an immediate, complete setup, for example with Hardhat.
 
 		Initially there were multiple issues:
 		\begin{enumerate}[1]
-			\item \textbf{Mapping for storing addresses:} Initially we used a mapping to store who had bought policies and was thereby eligible to claim them.
-				However, there were some issues with this: Firstly, the policies lost all their value when they were resold, because the address of the new owner would not be tracked in the mapping.
-				Moreover, storing all of this data was very gas-inefficient and redundant, because ownership of the policyToken is proof of ownership for the policy.
-			\item \textbf{No proper incentive for investors:} We had already planned to give the investors some incentive to keep their funds in the riskpool, even after the season would end, to increase liquidity for the next season.
-				The idea to achieve this, was, to use compound interest or create some other form of yield over time.
-				However, implementing this with the initial setup proved difficult and created vastly unfair results \textcolor{red}{Hier vllt nochmal genauer erkl\"aren}
-			\item \textbf{Weather oracle:} The initial mock-up for the weather oracle was just a number that could be accessed and stored on the contract directly.
-				This was far from the goal of using chainlink as a decentralized oracle to reliably and transparently access the data.
-			\item \textbf{Attack vectors:} Lastly there were some attack-vectors, especially for the owner.
-				The \texttt{startNewSeason()} function could be used at any point during the season, thus rendering unclaimed policyTokens worthless and not allowing for investment-withdrawals to be made.
+		\item \textbf{Mapping for storing addresses:} Initially, a mapping was used to store who had bought policies and was thereby eligible to claim them.
+		However, there were some issues with this: Firstly, the policies lost all their value when they were resold, because the address of the new owner would not be tracked in the mapping.
+		Moreover, storing all of this data was very gas-inefficient and redundant, because ownership of the policyToken is proof of ownership for the policy.
+		\item \textbf{No proper incentive for investors:} It was already planned to give investors an incentive to keep their funds in the risk pool, even after the season would end, to increase liquidity for the next season.
+		The idea to achieve this was to use compound interest or create some other form of yield over time.
+		However, implementing this with the initial setup proved difficult and created vastly unfair results.
+		\item \textbf{Weather oracle:} The initial mock-up for the weather oracle was just a number that could be accessed and stored on the contract directly.
+		This was far from the goal of using Chainlink as a decentralized oracle to reliably and transparently access the data.
+		\item \textbf{Attack vectors:} Lastly there were some attack vectors, especially for the owner.
+		The \texttt{startNewSeason()} function could be used at any point during the season, thus rendering unclaimed policy tokens worthless and not allowing for investment withdrawals to be made.
 		\end{enumerate}
 
-		\begin{figure}[H]
+		\begin{figure}[htbp]
 			\centering
 			\includegraphics[scale=0.5]{graphics/ClassDiagram_Old}
 			\caption{Initial Contract Design \\ \textit{Source: Author's own.}}
@@ -529,7 +576,7 @@
 		The main fixes were:
 
 		% Table: Major Issues and Fixes
-		\begin{table}[H]
+		\begin{table}[htbp]
 			\centering
 			\caption{Major Issues and Corresponding Fixes}
 			\label{tab:issues-fixes}
@@ -541,11 +588,11 @@
 				\hline
 				No proper incentive for investors and difficulties with implementation & Switched from self-made investment tracking to using the \texttt{ERC4626 vault} \\
 				\hline
-				Using Token Standards ERC4626, ERC20 and ERC1155 simultaneously, causing errors with inheritance of the contract & Switched from ERC1155 to only using ERC20 for the policyTokens \\
+				Using Token Standards ERC4626, ERC20 and ERC1155 simultaneously, causing errors with inheritance of the contract & Switched from ERC1155 to only using ERC20 for the policy tokens \\
 				\hline
-				Weather Oracle / Chainlink integration & Implementing the proper Chainlink standards for the mock-up-weather oracle~\parencite{AggregatorV3Interface} \\
+				Weather Oracle / Chainlink integration & Implementing the proper Chainlink standards for the mock-up weather oracle~\parencite{AggregatorV3Interface} \\
 				\hline
-				Attack Vector for Owner & Fixed some issues by including modifiers and properly implementing \enquote{mini-}state-machine (refer to enumeration~\ref{enum:phases}) \\
+				Attack Vector for Owner & Fixed some issues by including modifiers and properly implementing a state machine (refer to enumeration~\ref{enum:phases}) \\
 				\hline
 			\end{tabular}
 		\end{table}
@@ -555,7 +602,7 @@
 
 		The final state of the contract can be seen here:
 
-		\begin{figure}[H]
+		\begin{figure}[htbp]
 			\centering
 			\includegraphics[scale=0.5]{graphics/ClassDiagram_New}
 			\caption{Final Contract Design \\ \textit{Source: Author's own.}}
@@ -568,13 +615,13 @@
 		The constructor takes 2 arguments:
 		\begin{enumerate}[(1)]
 			\item \textbf{usdcAddress:} The address of the stablecoin that will be used for the transactions, here this would be the address of the deployed MockUSDC contract
-			\item \textbf{weatherOracle:} The address of the weather data oracle service, here this would be the address of the deployed MockWeatherOracle contract, but in production should be the corresponding chainlink address.
+			\item \textbf{weatherOracle:} The address of the weather data oracle service, here this would be the address of the deployed MockWeatherOracle contract, but in production should be the corresponding Chainlink address.
 		\end{enumerate}
 
 		Both are required to not be zero and used to set the corresponding fields for further use.
 		Then the first season is initialized.
 
-		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:lstlisting1}]
+		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:contract-ctor}]
 		...
 
 		constructor(address _usdcAddress, address _weatherOracle)
@@ -597,15 +644,15 @@
 			}
 
 			...
-		\end{lslisting}
+		\end{lstlisting}
 
-		The contract utilizes a SeasonState enum to keep track of the phase that is currently active in the state Machine.
+		As shown in listing~\ref{lst:contract-state}, the contract utilizes a SeasonState enum to keep track of the phase that is currently active in the state machine.
 		The \texttt{getSeasonState()} method is used as the state machine and utilizes the \texttt{getCurrentTime()} method.
 		The choice to implement the time this way, instead of simply using the \texttt{block.timestamp} was made to allow for time manipulation in testing.
 		That is why there is a testingTimeOffset being added to the timestamp.
 		This offset is calculated and set in a method of its own, that is only used for testing / showcasing reasons and would be removed for production.
 
-		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:lstlisting2}]
+		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:contract-state}]
 		...
 
 		enum SeasonState { ACTIVE, INACTIVE, CLAIM, WITHDRAW, FINISHED }
@@ -654,14 +701,14 @@
 						...
 		\end{lstlisting}
 
-		One example of how this gets used, can be seen in the modifier \texttt{onlyAfterFullSeasonCycle()}, which requires, that the current season state is \enquote{FINISHED}.
+		One example of how this gets used, can be seen in the modifier \texttt{onlyAfterFullSeasonCycle()}, which requires that the current season state is \enquote{FINISHED}.
 		This modifier is for example used for the \texttt{startNewSeason()} function, which initializes a new season with the given premium.
 		The function should only be called once the last season has finished, to avoid policies not being claimable or investors not being able to withdraw their funds.
 
 		The most important functions for the farmers are \texttt{buyPolicy()} and \texttt{claimPolicies()}.
 		They allow for purchasing and filing claims while checking all necessary conditions.
 
-		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:lstlisting3}]
+		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:contract-claims}]
 		...
 
 		function buyPolicy(uint256 _amount) external nonReentrant returns (uint256 seasonId) {
@@ -704,21 +751,21 @@
 		\end{lstlisting}
 
 		The \texttt{buyPolicy()} function takes in the amount of \texttt{policyTokens} the user wants to buy and returns the current seasonId.
-		This id could be used to display metadata about the season in the front-end.
+		This id could be used to display metadata about the season in the front end.
 		The amount needs to be above zero and the season needs to be in the active phase.
-		The premium gets calculated based on the amount and the premium stored in the SeasonPolicy struct, that gets set at the beginning of the season, based on the outcome of the auction.
-		After the transfer of the funds the \texttt{policyTokens} get minted to the users wallet and the corresponding event gets emitted.
+		The premium gets calculated based on the amount and the premium stored in the SeasonPolicy struct, that gets set at the beginning of the season.
+		After the transfer of the funds the \texttt{policyTokens} get minted to the user's wallet and the corresponding event gets emitted.
 
-		The \texttt{claimPolicies()} function requires the season to be in the claim phase and claims all available seasonPolicy Tokens in the users wallet.
+		The \texttt{claimPolicies()} function requires the season to be in the claim phase and claims all available seasonPolicy tokens in the user's wallet.
 		It checks whether the weather condition is met through the weather oracle with the \texttt{getWeatherData()} function and calculates the total payout, based on the fixed payout per token and the amount of tokens.
 		Lastly the payout is made, the tokens are burned and an event gets emitted.
 
-		Both functions are secured by a reentrancyGuard as a security best practice, because unlike in the prototype setup, in production the stableCoin contract used is not directly controllable and there might be some malicious code or even potential flash loan attacks, where the attacker attempts to manipulate the contract state through rapid sequential interactions.
+		Both functions are secured by a reentrancy guard as a security best practice, because unlike in the prototype setup, in production the stablecoin contract used is not directly controllable and there might be some malicious code or even potential flash loan attacks, where the attacker attempts to manipulate the contract state through rapid sequential interactions.
 		In both cases the tokens are minted/burned only after the transfer was successful to avoid minting/burning should the transfer fail.
 
 		Lastly the investment logic is simplified a lot by using the \texttt{ERC4626 token vault} standard:
 
-		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:lstlisting4}]
+		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:contract-invest}]
 		...
 
 		// ERC4626 investment logic
@@ -737,9 +784,9 @@
 				...
 		\end{lstlisting}
 
-		The \texttt{invest()} function simply deposits the assets in the vault, requiring the amount to be above zero and the \texttt{redeemShares()} function redeems the users shares again.
+		The \texttt{invest()} function simply deposits the assets in the vault, requiring the amount to be above zero and the \texttt{redeemShares()} function redeems the user's shares again.
 		All the transfers are handled by the vault implementation.
-		The main customization is the \texttt{onlyDuringSeason} modifier for the \texttt{invest()} function and the requirement for the \enquote{WITHDRAW} phase in the \texttt{redeemShares()} function, making sure investments are not made during the claim or withdraw phases and the withdraws can only happen in the coresponding phase.
+		The main customization is the \texttt{onlyDuringSeason} modifier for the \texttt{invest()} function and the requirement for the \enquote{WITHDRAW} phase in the \texttt{redeemShares()} function, making sure investments are not made during the claim or withdraw phases and the withdrawals can only happen in the corresponding phase.
 
 		Some information about the \texttt{SeasonPolicyToken}, \texttt{MockUSDC} and \texttt{MockWeatherOracle} contracts can be found in the appendix~\ref{sec:contract-analysis}.
 
@@ -767,57 +814,61 @@
 		Test coverage reaches nearly 100\% for critical functions, allowing bugs to be identified and resolved early in the development cycle. 
 		The comprehensive test suite verifies correct contract behavior across a variety of scenarios, including edge cases and potential attack vectors. 
 
-		\begin{figure}[H]
+		\begin{figure}[!htbp]
 			\centering
 			\begin{minipage}[b]{0.48\textwidth}
 				\centering
-				\includegraphics[width=0.95\linewidth]{graphics/Passing_Tests}
-				\includegraphics[width=0.95\linewidth]{graphics/Test_Coverage}
+				\includegraphics[width=0.90\linewidth]{graphics/Passing_Tests}
+				\includegraphics[width=0.90\linewidth]{graphics/Test_Coverage}
 				\caption*{(a) Passing Tests and Coverage}
 			\end{minipage}\hfill
 			\begin{minipage}[b]{0.48\textwidth}
 				\centering
-				\includegraphics[width=0.95\linewidth]{graphics/Test_Code}
+				\includegraphics[width=0.90\linewidth]{graphics/Test_Code}
 				\caption*{(b) Test Code}
 			\end{minipage}
-			\caption{Test setup: (a) Passing tests and coverage; (b) Example of test code. \\ \textit{Source: Author's own.}}
+			\caption{Test setup: (a) Passing tests and coverage; (b) Example of test code. \textit{Source: Author's own.}}
 			\label{fig:test-set-up}
 		\end{figure}
 
-        \subsection{Problems and Remaining Questions}\label{subsec:problems-and-remaining-questions}
+% Flush pending floats before starting the next subsection
+\FloatBarrier
 
-        In implementing the RainyDayFund contract, we encountered a subtle interaction between policy purchases and investor deposits, stemming from the OpenZeppelin ERC4626 vault's design for handling external asset inflows.
+\subsection{Problems and Remaining Questions}\label{subsec:problems-and-remaining-questions}
+
+        During implementation of the RainyDayFund contract, a subtle interaction between policy purchases and investor deposits was identified, stemming from the OpenZeppelin ERC4626 vault's design for handling external asset inflows.
 
         Specifically, when policies are purchased before any investments, the USDC premiums are transferred directly into the vault via \texttt{buyPolicy()}, increasing \texttt{totalAssets()} without minting corresponding RDIS shares.
         This leaves \texttt{totalSupply()} at zero.
 
-        Subsequent calls to \texttt{invest()}, invoking \texttt{deposit()}, rely on ERC4626's \texttt{convertToShares()} function to compute share issuance:
+        Subsequent calls to \texttt{invest()}, invoking ERC4626's \texttt{convertToShares()} function to compute share issuance:
 
         \[
-            \text{shares} = \text{assets} \times \frac{\text{totalSupply()} + 10^{\text{decimals offset}}}{\text{totalAssets()} + 1}
+        \text{shares} = \text{assets} \times \frac{\text{totalSupply()} + 10^{\text{decimals offset}}}{\text{totalAssets()} + 1}
         \]
 
         where the decimals offset is $12$ (RDIS at 18 decimals, USDC at 6).
         The $10^{12}$ term acts as a ``virtual supply'' to bootstrap fair pricing and normalize decimals.
 
-        With no prior shares, this heavily dilutes the first deposit: for a 1~USDC investment after 9~USDC in premiums, shares $\approx 1.11 \times 10^{11}$ raw units, or $\sim 1.11 \times 10^{-7}$ whole RDIS tokens---appearing as ``quasi-null'' in our React UI.
+        With no prior shares, this heavily dilutes the first deposit: for a 1~USDC investment after 9~USDC in premiums, shares $\approx 1.11 \times 10^{11}$ raw units, or $\sim 1.11 \times 10^{-7}$ whole RDIS tokens---appearing as ``quasi-null'' in the React UI.
         Later investments face similar dilution until real supply dominates the virtual offset.
 
         This is not a bug but intended ERC4626 behavior (per EIP-4626) to prevent windfalls from external transfers, ensuring atomic fairness: depositors receive exactly their assets' worth upon immediate redeem.
-        However, it creates order-dependence in our flow---invest-first avoids the issue---and cosmetic UI problems, misaligning with our goal of seamless pooling where premiums back the fund and investments capture retained upside (NAV $> 1$ on low claims) or share dilution (NAV $< 1$ on payouts).
+        However, it creates order dependence in this flow---invest-first avoids the issue---and cosmetic UI problems, misaligning with the goal of seamless pooling where premiums back the fund and investments capture retained upside (NAV $> 1$ on low claims) or share dilution (NAV $< 1$ on payouts).
 
-        To address this, we propose:
+        To address this, the following measures are proposed:
         \begin{enumerate}
-            \item In \texttt{buyPolicy()}, after transferring premiums, mint proportional protocol shares to the owner at the bootstrap rate ($10^{12}$ per USDC), ensuring whole-scale issuance for all deposits.
-            \item In \texttt{redeemShares()} (WITHDRAW phase only), auto-trigger a one-time redemption of protocol shares on the first investor withdrawal, donating proceeds back as external assets (no new shares minted).
+        \item In \texttt{buyPolicy()}, after transferring premiums, mint proportional protocol shares to the owner at the bootstrap rate ($10^{12}$ per USDC), ensuring whole-scale issuance for all deposits.
+        \item In \texttt{redeemShares()} (WITHDRAW phase only), auto-trigger a one-time redemption of protocol shares on the first investor withdrawal, donating proceeds back as external assets (no new shares minted).
         \end{enumerate}
         This realizes upside trustlessly: the first withdrawer enables full NAV for all, with negligible extra gas ($\sim$20k).
 
         Trade-offs include: if no withdrawals occur, retained premiums remain unrealized (fund rolls over); concurrent first withdrawals are serialized fairly by Ethereum.
-        We defer implementation due to time constraints and audit needs, opting to document and avoid the order in deployment.
+        Implementation is deferred due to time constraints and audit needs, and the order dependence is documented and avoided in deployment.
 
-        \subsection{Outlook \& Next Steps}\label{subsec:outlook}
-		The most important next step is the integration of real Chainlink oracles for weather data. 
+
+		\subsection{Outlook \& Next Steps}\label{subsec:outlook}
+		The most important next step is the integration of real Chainlink oracles for weather data.
 		The current implementation uses mock data, but production requires reliable, tamper-proof weather information from multiple sources. 
 		Deployment on a real network is also necessary. 
 		Layer 2 solutions such as Polygon or Arbitrum are suitable due to significantly lower gas costs, which is essential for price-sensitive users such as farmers. 
@@ -850,7 +901,7 @@
 		\section{Conclusion}\label{sec:conclusion}
 		Blockchain-enabled parametric microinsurance is not a silver bullet for climate risk, but this work shows it can remove long-standing frictions that kept protection out of reach for Kenyan smallholders.
         The approach begins from a simple premise: if pricing, capital formation, and payouts are automated around objective weather signals, then insurance can become cheaper, faster, and more trustworthy.
-        The design couples a sealed-bid, uniform-price mechanism for seasonal price discovery with tokenized coverage and a pooled ERC-4626 vault, and a test-covered prototype was implemented that executes end-to-end flows with deterministic, auditable logic.
+        The design proposes a sealed-bid, uniform-price mechanism for seasonal price discovery alongside tokenized coverage and a pooled ERC-4626 vault, and a test-covered prototype was implemented that executes end-to-end flows with deterministic, auditable logic. The auction mechanism remains part of the model and is not yet implemented on-chain.
 
 		Three results stand out.
 
@@ -873,7 +924,7 @@
 		In sum, the Rainy-Day Fund demonstrates that decentralized infrastructure can make parametric insurance simpler, fairer, and more credible for farmers like Mary—converting climate shocks into predictable cashflows when they matter most.
         With robust data, careful governance, and field partnerships, the prototype can evolve into a resilient safety net that scales beyond a single crop or region while remaining transparent and accountable by design.
 
-	    The entire project can be found in the \href{https://github.com/vincentschall/decentralized_weather_insurance}{Github repository}.
+	    The entire project can be found in the \href{https://github.com/vincentschall/decentralized_weather_insurance}{GitHub repository}.
 
 		% ---------- Bibliography ----------
 		\printbibliography
