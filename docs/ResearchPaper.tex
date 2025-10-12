@@ -831,10 +831,9 @@
 			\label{fig:test-set-up}
 		\end{figure}
 
-% Flush pending floats before starting the next subsection
-\FloatBarrier
+    \FloatBarrier
 
-\subsection{Problems and Remaining Questions}\label{subsec:problems-and-remaining-questions}
+    \subsection{Problems and Remaining Questions}\label{subsec:problems-and-remaining-questions}
 
         During implementation of the RainyDayFund contract, a subtle interaction between policy purchases and investor deposits was identified, stemming from the OpenZeppelin ERC4626 vault's design for handling external asset inflows.
 
@@ -977,5 +976,25 @@
 			\item Functions to update weather data (for testing purposes)
 			\item Standard interface conformance to ensure compatibility with the main contract
 		\end{itemize}
+
+        \section{AI Usage Overview}\label{sec:AI-Usage}
+
+        \begin{table}[htbp]
+            \centering
+            \caption{AI Usage Table}
+            \label{tab:AI-usage}
+            \begin{tabular}{|p{0.32\textwidth}|p{0.32\textwidth}|p{0.32\textwidth}|}
+                \hline
+                \textbf{AI-based Tool} & \textbf{Type of Use} & \textbf{Affected Parts of the Work} \\
+                \hline
+                \textbf{ChatGPT} & Proof-Reading, fixing typos and improving sentence structure as well as fixing LaTeX compilation errors & ResearchPaper.pdf \\
+                \hline
+                \textbf{ClaudeAI} & Finding and Fixing coding errors & Testing suite, App.jsx \\
+                \hline
+                \textbf{Grok/xAI} & Finding and Fixing coding errors, suggestions for tech-stack & Solidity Contracts \\
+                \hline
+            \end{tabular}
+        \end{table}
+
 
 	\end{document}
