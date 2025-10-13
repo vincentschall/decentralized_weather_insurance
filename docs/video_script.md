@@ -63,14 +63,7 @@ Code stack visualization: *RainyDayFund.sol* state machine diagram (ACTIVE→CLA
 **Voice-over:**  
 The state machine manages seasonal lifecycles seamlessly. The ERC-4626 vault standardizes investor shares, while ERC-20 policy tokens are transferable and composable with DeFi. The system integrates Chainlink oracles for weather data, USDC for stable value, and M-Pesa for fiat conversion. We've achieved 93% test coverage across the full contract lifecycle. Next steps include integrating live oracle feeds, deploying to Layer-2 networks for sub-dollar transaction costs, and completing security audits. The foundation is solid.
 
-## Scene 10 – Remaining Challenges & Next Steps
-**Visuals:**  
-Challenge cards that transform into solutions: Basis risk puzzle piece → Multi-source oracle network. Regulatory barrier → IRA partnership pathway. Literacy gap → Visual Swahili app mockup. Roadmap timeline: "Q4 2025: Oracle Integration • Q1 2026: 500-Farmer Pilot • 2026+: Regional Scale-Up."
-
-**Voice-over:**  
-Challenges remain, and much is still to do. Basis risk requires multi-source data aggregation, Vault optimization needs protocol-level refinement. Regulatory approval demands engagement with Kenya's Insurance Regulatory Authority through NAIP channels and farmer adoption requires visual interfaces, local language support, and cooperative-led training. Our proposed roadmap: integrate Chainlink oracles for Makueni County by end of 2025, deploy to Layer-2 for affordable transactions, launch a 500-farmer pilot with subsidized premiums and rigorous impact measurement in early 2026, then scale across regions, crops, and national borders.
-
-## Scene 11 – Closing
+## Scene 10 – Closing
 **Visuals:**  
 Mary checks her phone, rain begins falling on green fields, children playing nearby. Logo: "Rainy-Day Fund: Turning droughts into liquidity." Credits fade in: "University of Basel Blockchain Challenge 2025 • Group A: Ellena, Sabina, Noah, Vincent."
 
