@@ -429,9 +429,9 @@
 		\section{Implementation}\label{sec:implementation}
 		Overview of implementation goals, strategy and architecture.
 
-		The goal for this project was providing a showcase prototype.
+		The goal for this project is providing a showcase prototype.
 		Therefore, the focus was on providing the most important features, a neat, easy UI and a good test setup to showcase the functionality and laying the groundwork for possible extensions.
-		These extensions and some of the more advanced features that were not provided in the prototype will be discussed in sections~\ref{subsec:qa-security} and~\ref{subsec:outlook}.
+		These extensions and some of the more advanced features that were not provided in the prototype will be discussed in sections~\ref{subsec:qa-security} and~\ref{subsec:future-work}.
 		It is important to note that the project is not a complete MVP (minimum viable product), due to the constraints when it comes to funding for example Chainlink as provider for weather data or using actual currency as a payment method.
 
 		% New: concise prototype scope table
@@ -457,16 +457,18 @@
 		\hline
 		Risk pool & ERC-4626 vault & ERC-4626 vault implemented \\
 		\hline
-		Investor redemption & Flexible per design & redeemShares() in WITHDRAW phase \\
+		Investor redemption & Flexible per design & Restricted to WITHDRAW phase \\
 		\hline
 		Fiat/mobile rails & M-Pesa bridge integration & Not implemented (UI designed for future integration) \\
 		\hline
 		Reinsurance & Optional & Not implemented \\
 		\hline
-		Deployment & Public testnet/mainnet & Local Hardhat network for prototype \\
+		Deployment & Public testnet/mainnet & Local Hardhat network\footnotemark{} for prototype \\
 		\hline
 		\end{tabular}
 		\end{table}
+
+        \footnotetext{See: https://v2.hardhat.org/docs}
 
 		\subsection{Development Process \& Strategy}\label{subsec:dev-strategy}
 		The strategy for the implementation was largely based on a learning process.
@@ -501,7 +503,7 @@
 		\end{enumerate}
 
 		These are just the most important tasks that are included in the final prototype.
-		For further necessary steps towards a finished product refer to~\ref{subsec:outlook}.
+		For further necessary steps towards a finished product refer to~\ref{subsec:future-work}.
 
 
 		\subsection{System (Macro) Architecture}\label{subsec:system-architecture}
@@ -539,19 +541,44 @@
 				\label{enum:phases}
 		\end{enumerate}
 
+        \subsection{Development Tools \& Infrastructure}\label{subsec:development-tools-infrastructure}
+        The development process utilized a modern toolchain centered around the Hardhat framework for smart contract development, deployment, and testing.
+        Initial contract development was performed in the Remix IDE, which enabled rapid deployment and manual testing directly in the browser without requiring local setup.
+        After a working prototype was established, development transitioned to Hardhat, providing a more robust environment with a local blockchain that simulates real network conditions.
+        The frontend was built using React, serving as an interface to test smart contract interactions and demonstrate overall system functionality.
 
-		\subsection{Smart Contract Design (Micro)}\label{subsec:smart-contract-design}
+        Version control was managed through Git, with collaboration facilitated via a GitHub repository.
+        This setup ensured transparency, accountability, and effective team coordination throughout the project.
+        Deployment was initially planned for the Sepolia Testnet\footnotemark{}, but the final sprint used only a local network due to recurring issues with contract interaction on Sepolia. \footnotetext{Test network for Ethereum; for more information refer to https://getblock.medium.com/what-is-sepolia-a-beginners-guide-to-ethereum-test-networks-866663a26698}
+        This compromise allowed for the delivery of a fully functional prototype that operates predictably without external dependencies.
+
+        Development environments included the Remix IDE\footnotemark{} for Solidity-based work and Neovim for general-purpose coding tasks.\footnotetext{An online IDE for developing solidity smart contracts. For documentation see: https://remix-ide.readthedocs.io/en/latest/run.html\#remix-vm, the IDE can be found at: https://remix.ethereum.org}
+        All deployment tasks were executed through JavaScript scripts within the Hardhat framework.
+
+
+        \subsection{Initial Contract Design}\label{subsec:initial-contract-design}
 		The project is built around a Solidity smart contract using the Ethereum Virtual Machine.
 		This central RainyDayFund contract can be called using the front end and holds all the exposed functionality for the consumer.
 		Investors use the \texttt{invest()} and \texttt{redeemShares()} methods while insurees can buy and claim their policies in batches using the \texttt{buyPolicy()} and \texttt{claimPolicies()} functions.
 		The contract leverages ERC-20 season policy tokens, enabling simple transfers and season-scoped policy management.
 
-		As shown in Figure~\ref{fig:initial-contract-design}, the initial contract made use of the \texttt{1155 token standard} for the \texttt{policyTokens}, to take advantage of the cost-efficient batch operations~\parencite{ERC1155}.
-		To help with testing the (Mock) USDC was created, implementing the ERC20 interface, to emulate the behavior of common stablecoins like USDC, which are used as payment and funding for the risk pool.
-		This allowed for the free minting and full control over the coins and made testing the functionality of the main contract possible, even within the bounds of Remix VM.
-		Therefore, testing was quicker and easier at the beginning, without the need to always deploy on the Sepolia Testnet or an immediate, complete setup, for example with Hardhat.
+		As shown in Figure~\ref{fig:initial-contract-design}, the initial contract made use of the \texttt{ERC-1155 token standard} for the \texttt{policyTokens}, to take advantage of the cost-efficient batch operations~\parencite{ERC1155}.
+		To help with testing the (Mock) USDC\footnotemark{} was created, implementing the ERC20 interface, to emulate the behavior of common stablecoins like USDC, which are used as payment and funding for the risk pool. \footnotetext{One of the largest stablecoins worldwide, well accessible and low cost, see: https://developers.circle.com/stablecoins/what-is-usdc}
+        This allowed for the free minting and full control over the coins and made testing the functionality of the main contract possible, even within the bounds of Remix VM .
+        Therefore, testing was quicker and easier at the beginning, without the need to always deploy on the Sepolia Testnet or an immediate, complete setup, for example with Hardhat.
 
-		Initially there were multiple issues:
+        \begin{figure}[htbp]
+            \centering
+            \includegraphics[scale=0.5]{graphics/ClassDiagram_Old}
+            \caption{Initial Contract Design \\ \textit{Source: Author's own.}}
+            \label{fig:initial-contract-design}
+        \end{figure}
+
+
+        \pagebreak
+
+        Initially there were multiple issues:
+
 		\begin{enumerate}[1]
 		\item \textbf{Mapping for storing addresses:} Initially, a mapping was used to store who had bought policies and was thereby eligible to claim them.
 		However, there were some issues with this: Firstly, the policies lost all their value when they were resold, because the address of the new owner would not be tracked in the mapping.
@@ -565,18 +592,13 @@
 		The \texttt{startNewSeason()} function could be used at any point during the season, thus rendering unclaimed policy tokens worthless and not allowing for investment withdrawals to be made.
 		\end{enumerate}
 
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[scale=0.5]{graphics/ClassDiagram_Old}
-			\caption{Initial Contract Design \\ \textit{Source: Author's own.}}
-			\label{fig:initial-contract-design}
-		\end{figure}
+        \pagebreak
 
 		Addressing these issues of the initial prototype the contract was restructured.
 		The main fixes were:
 
 		% Table: Major Issues and Fixes
-		\begin{table}[htbp]
+		\begin{table}[h]
 			\centering
 			\caption{Major Issues and Corresponding Fixes}
 			\label{tab:issues-fixes}
@@ -597,12 +619,10 @@
 			\end{tabular}
 		\end{table}
 
-
 		\subsection{Implementation: Final State of the project}\label{subsec:final-state}
 
-		The final state of the contract can be seen here:
-
-		\begin{figure}[htbp]
+		The final state of the contract can be seen in Figure~\ref{fig:final-contract-design}
+		\begin{figure}[h]
 			\centering
 			\includegraphics[scale=0.5]{graphics/ClassDiagram_New}
 			\caption{Final Contract Design \\ \textit{Source: Author's own.}}
@@ -621,96 +641,55 @@
 		Both are required to not be zero and used to set the corresponding fields for further use.
 		Then the first season is initialized.
 
-		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:contract-ctor}]
-		...
-
-		constructor(address _usdcAddress, address _weatherOracle)
-		ERC4626(IERC20Metadata(_usdcAddress))
-		ERC20("RainyDay Investor Shares", "RDIS")
-		Ownable(msg.sender)
-		{
-			require(_usdcAddress != address(0), "USDC address zero");
-			usdc = IERC20(_usdcAddress);
-
-			require(_weatherOracle != address(0), "Weather oracle zero");
-			weatherFeed = AggregatorV3Interface(_weatherOracle);
-
-			currentSeasonId = 1;
-			_initializeSeason(currentSeasonId);
-			seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit;
-
-			// Enable testing mode by default for local testing
-			testingMode = true;
-			}
-
-			...
-		\end{lstlisting}
-
 		As shown in listing~\ref{lst:contract-state}, the contract utilizes a SeasonState enum to keep track of the phase that is currently active in the state machine.
 		The \texttt{getSeasonState()} method is used as the state machine and utilizes the \texttt{getCurrentTime()} method.
 		The choice to implement the time this way, instead of simply using the \texttt{block.timestamp} was made to allow for time manipulation in testing.
 		That is why there is a testingTimeOffset being added to the timestamp.
-		This offset is calculated and set in a method of its own, that is only used for testing / showcasing reasons and would be removed for production.
+		This offset is calculated and set in a method of its own, that is only used for testing and showcasing reasons and would be removed for production.
 
-		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:contract-state}]
-		...
-
+		\begin{lstlisting}[style=soliditystyle, caption={Excerpt: RainyDayFund.sol - StateMachine},label={lst:contract-state}]
 		enum SeasonState { ACTIVE, INACTIVE, CLAIM, WITHDRAW, FINISHED }
-
-		...
-
-		// Testing function to get current time (can be offset in testing mode)
 		function getCurrentTime() public view returns (uint256) {
 			if (testingMode) {
 				return block.timestamp + testingTimeOffset;
 			}
 			return block.timestamp;
 			}
-
-			...
-
-			function getSeasonState() public view returns (SeasonState) {
-				uint256 currentTime = getCurrentTime();
-				if (currentTime < seasonOverTimeStamp - timeUnit) {
-					return SeasonState.ACTIVE;
-				} else if (currentTime < seasonOverTimeStamp) {
-					return SeasonState.INACTIVE;
-				} else if (currentTime < seasonOverTimeStamp + timeUnit) {
-					return SeasonState.CLAIM;
-				} else if (currentTime < seasonOverTimeStamp + 2 * timeUnit) {
-					return SeasonState.WITHDRAW;
-				} else {
-					return SeasonState.FINISHED;
-				}
-				}
-
-				modifier onlyAfterFullSeasonCycle() {
-					require(getSeasonState() == SeasonState.FINISHED, "Season not fully finished yet");
-					_;
-					}
-
-					...
-
-					function startNewSeason(uint256 _premium) external onlyOwner onlyAfterFullSeasonCycle {
-						currentSeasonId++;
-						premium = _premium;
-						seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit;
-						_initializeSeason(currentSeasonId);
-						}
-
-						...
+        function getSeasonState() public view returns (SeasonState) {
+            uint256 currentTime = getCurrentTime();
+            if (currentTime < seasonOverTimeStamp - timeUnit) {
+                return SeasonState.ACTIVE;
+            } else if (currentTime < seasonOverTimeStamp) {
+                return SeasonState.INACTIVE;
+            } else if (currentTime < seasonOverTimeStamp + timeUnit) {
+                return SeasonState.CLAIM;
+            } else if (currentTime < seasonOverTimeStamp + 2 * timeUnit) {
+                return SeasonState.WITHDRAW;
+            } else {
+                return SeasonState.FINISHED;
+            }
+            }
+        modifier onlyAfterFullSeasonCycle() {
+            require(getSeasonState() == SeasonState.FINISHED, "Season not fully finished yet");
+            _;
+            }
+        function startNewSeason(uint256 _premium) external onlyOwner onlyAfterFullSeasonCycle {
+            currentSeasonId++;
+            premium = _premium;
+            seasonOverTimeStamp = getCurrentTime() + 2 * timeUnit;
+            _initializeSeason(currentSeasonId);
+            }
 		\end{lstlisting}
 
 		One example of how this gets used, can be seen in the modifier \texttt{onlyAfterFullSeasonCycle()}, which requires that the current season state is \enquote{FINISHED}.
 		This modifier is for example used for the \texttt{startNewSeason()} function, which initializes a new season with the given premium.
 		The function should only be called once the last season has finished, to avoid policies not being claimable or investors not being able to withdraw their funds.
 
+
 		The most important functions for the farmers are \texttt{buyPolicy()} and \texttt{claimPolicies()}.
 		They allow for purchasing and filing claims while checking all necessary conditions.
 
-		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:contract-claims}]
-		...
-
+		\begin{lstlisting}[style=soliditystyle, caption={Excerpt: RainyDayFund.sol - Farmer Functions},label={lst:contract-claims}]
 		function buyPolicy(uint256 _amount) external nonReentrant returns (uint256 seasonId) {
 			require(_amount > 0, "Amount > 0");
 			require(getSeasonState() == SeasonState.ACTIVE, "Not in active period");
@@ -746,8 +725,6 @@
 
 				emit ClaimMade(msg.sender, currentSeasonId, amount, totalPayout);
 				}
-
-				...
 		\end{lstlisting}
 
 		The \texttt{buyPolicy()} function takes in the amount of \texttt{policyTokens} the user wants to buy and returns the current seasonId.
@@ -765,9 +742,7 @@
 
 		Lastly the investment logic is simplified a lot by using the \texttt{ERC4626 token vault} standard:
 
-		\begin{lstlisting}[style=soliditystyle, caption={RainyDayFund.sol - Main Insurance Contract},label={lst:contract-invest}]
-		...
-
+		\begin{lstlisting}[style=soliditystyle, caption={Excerpt: RainyDayFund.sol - Investor Functions},label={lst:contract-invest}]
 		// ERC4626 investment logic
 		function invest(uint256 assets) external nonReentrant onlyDuringSeason {
 			require(assets > 0, "Amount > 0");
@@ -780,8 +755,6 @@
 				uint256 assets = redeem(shares, msg.sender, msg.sender);
 				emit InvestmentWithdrawn(msg.sender, assets);
 				}
-
-				...
 		\end{lstlisting}
 
 		The \texttt{invest()} function simply deposits the assets in the vault, requiring the amount to be above zero and the \texttt{redeemShares()} function redeems the user's shares again.
@@ -789,20 +762,6 @@
 		The main customization is the \texttt{onlyDuringSeason} modifier for the \texttt{invest()} function and the requirement for the \enquote{WITHDRAW} phase in the \texttt{redeemShares()} function, making sure investments are not made during the claim or withdraw phases and the withdrawals can only happen in the corresponding phase.
 
 		Some information about the \texttt{SeasonPolicyToken}, \texttt{MockUSDC} and \texttt{MockWeatherOracle} contracts can be found in the appendix~\ref{sec:contract-analysis}.
-
-
-        \subsection{Development Tools \& Infrastructure}\label{subsec:development-tools-infrastructure}
-		The development process utilized a modern toolchain centered around the Hardhat framework for smart contract development, deployment, and testing. 
-		Initial contract development was performed in the Remix IDE, which enabled rapid deployment and manual testing directly in the browser without requiring local setup. 
-		After a working prototype was established, development transitioned to Hardhat, providing a more robust environment with a local blockchain that simulates real network conditions. 
-		The frontend was built using React, serving as an interface to test smart contract interactions and demonstrate overall system functionality. 
-
-		Version control was managed through Git, with collaboration facilitated via a GitHub repository. This setup ensured transparency, accountability, and effective team coordination throughout the project. 
-		Deployment was initially planned for the Sepolia testnet, but the final sprint used only a local network due to recurring issues with contract interaction on Sepolia. 
-		This compromise allowed for the delivery of a fully functional prototype that operates predictably without external dependencies. 
-
-		Development environments included the Remix IDE for Solidity-based work and Neovim for general-purpose coding tasks. 
-		All deployment tasks were executed through JavaScript scripts within the Hardhat framework. 
 
 		\subsection{Quality Assurance \& Security}\label{subsec:qa-security}
 		Quality assurance focused on comprehensive testing and systematic validation of contract functionality. 
@@ -812,7 +771,7 @@
 
 		The test setup, shown in Figure~\ref{fig:test-set-up}, emphasizes the importance of robust testing and code coverage in the project. 
 		Test coverage reaches nearly 100\% for critical functions, allowing bugs to be identified and resolved early in the development cycle. 
-		The comprehensive test suite verifies correct contract behavior across a variety of scenarios, including edge cases and potential attack vectors. 
+		The comprehensive test suite verifies correct contract behavior across a variety of scenarios, including edge cases and potential attack vectors.
 
 		\begin{figure}[!htbp]
 			\centering
@@ -820,14 +779,8 @@
 				\centering
 				\includegraphics[width=0.90\linewidth]{graphics/Passing_Tests}
 				\includegraphics[width=0.90\linewidth]{graphics/Test_Coverage}
-				\caption*{(a) Passing Tests and Coverage}
-			\end{minipage}\hfill
-			\begin{minipage}[b]{0.48\textwidth}
-				\centering
-				\includegraphics[width=0.90\linewidth]{graphics/Test_Code}
-				\caption*{(b) Test Code}
+				\caption*{(a) Passing Tests and Coverage} \textit{Source: Author's own.}
 			\end{minipage}
-			\caption{Test setup: (a) Passing tests and coverage; (b) Example of test code. \textit{Source: Author's own.}}
 			\label{fig:test-set-up}
 		\end{figure}
 
@@ -866,11 +819,11 @@
         Implementation is deferred due to time constraints and audit needs, and the order dependence is documented and avoided in deployment.
 
 
-		\subsection{Outlook \& Next Steps}\label{subsec:outlook}
+		\subsection{Future Work}\label{subsec:future-work}
 		The most important next step is the integration of real Chainlink oracles for weather data.
 		The current implementation uses mock data, but production requires reliable, tamper-proof weather information from multiple sources. 
 		Deployment on a real network is also necessary. 
-		Layer 2 solutions such as Polygon or Arbitrum are suitable due to significantly lower gas costs, which is essential for price-sensitive users such as farmers. 
+		Layer 2\footnotemark{}\footnotetext{Refer to: \parencite{song2024advancingblockchainscalabilityintroduction}} solutions such as Polygon or Arbitrum~\footnotemark{} are suitable due to significantly lower gas costs, which is essential for price-sensitive users such as farmers.\footnotetext{https://blog.arbitrum.io/a-guide-to-understanding-blockchain-layer-2s/}
 		Cross-chain deployment should also be explored to provide users with additional flexibility. 
 
 		The smart contract architecture requires further refinement for production readiness. 
@@ -982,6 +935,7 @@
         \begin{table}[htbp]
             \centering
             \caption{AI Usage Table}
+
             \label{tab:AI-usage}
             \begin{tabular}{|p{0.32\textwidth}|p{0.32\textwidth}|p{0.32\textwidth}|}
                 \hline

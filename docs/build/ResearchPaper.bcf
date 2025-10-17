@@ -2445,6 +2445,7 @@
     <bcf:citekey order="54" intorder="2">shiller2003bond</bcf:citekey>
     <bcf:citekey order="55" intorder="1">ERC1155</bcf:citekey>
     <bcf:citekey order="56" intorder="1">AggregatorV3Interface</bcf:citekey>
+    <bcf:citekey order="57" intorder="1">song2024advancingblockchainscalabilityintroduction</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">

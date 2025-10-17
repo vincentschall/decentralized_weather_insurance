@@ -15,5 +15,8 @@
 *.vrb
 *.xdv
 
+
+.DS_Store
+
 # Local build dir (where we put aux files)
 docs/build/
