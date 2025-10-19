@@ -799,14 +799,14 @@
         \text{shares} = \text{assets} \times \frac{\text{totalSupply()} + 10^{\text{decimals offset}}}{\text{totalAssets()} + 1}
         \]
 
-        where the decimals offset is $12$ (RDIS at 18 decimals, USDC at 6).
+        where the decimals offset is $12$ (RDIS\footnotemark at 18 decimals, USDC at 6). \footnotetext{RainyDayFund Investor Shares - the shares investors get for their capital, as implemented in the ERC-4626 standard}
         The $10^{12}$ term acts as a ``virtual supply'' to bootstrap fair pricing and normalize decimals.
 
-        With no prior shares, this heavily dilutes the first deposit: for a 1~USDC investment after 9~USDC in premiums, shares $\approx 1.11 \times 10^{11}$ raw units, or $\sim 1.11 \times 10^{-7}$ whole RDIS tokens---appearing as ``quasi-null'' in the React UI.
+        With no prior shares, this heavily dilutes the first deposit: for a 1~USDC investment after 9~USDC in premiums, shares $\approx 1.11 \times 10^{11}$ raw units, or $\sim 1.11 \times 10^{-7}$ whole RDIS tokens---appearing as ``quasi-null'' in the React UI .
         Later investments face similar dilution until real supply dominates the virtual offset.
 
-        This is not a bug but intended ERC4626 behavior (per EIP-4626) to prevent windfalls from external transfers, ensuring atomic fairness: depositors receive exactly their assets' worth upon immediate redeem.
-        However, it creates order dependence in this flow---invest-first avoids the issue---and cosmetic UI problems, misaligning with the goal of seamless pooling where premiums back the fund and investments capture retained upside (NAV $> 1$ on low claims) or share dilution (NAV $< 1$ on payouts).
+        This is not a bug but intended ERC4626 behavior (per EIP-4626\footnotemark) to prevent windfalls from external transfers, ensuring atomic fairness: depositors receive exactly their assets' worth upon immediate redeem. \footnotetext{See: https://eips.ethereum.org/EIPS/eip-4626}
+        However, it creates order dependence in this flow---invest-first avoids the issue---and cosmetic UI problems, misaligning with the goal of seamless pooling where premiums back the fund and investments capture retained upside (NAV\footnotemark $> 1$ on low claims) or share dilution (NAV $< 1$ on payouts). \footnotetext{Net Asset Value, refer to e.g. https://www.investopedia.com/terms/n/nav.asp}
 
         To address this, the following measures are proposed:
         \begin{enumerate}
