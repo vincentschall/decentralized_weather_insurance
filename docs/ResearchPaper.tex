@@ -109,7 +109,7 @@
 
 		% Table of Contents
 		\tableofcontents
-		\bigskip
+		\pagebreak
 
 		\section{Goals and Motivation}\label{sec:goals}
 		The goal of the Rainy Day Fund is to design a decentralized parametric insurance solution that can provide smallholder farmers with affordable, fast, and trustworthy protection against climate-related risks.
@@ -241,6 +241,8 @@
 		Farmers still face major barriers, including basis risk~\parencite{Jensen2016}, limited awareness and perceived complexity~\parencite{Janzen2020}, and upfront liquidity constraints all reduce trust and limit uptake.
 		Early blockchain pilots such as Etherisc's indicate promising pathways to reduce administrative costs and improve transparency, but scaling such solutions will depend on robust data infrastructure, effective oracles, and farmer-centric design.
 		Overall, the market reflects both a large protection gap and a significant opportunity, as innovative, technology-enabled models that combine affordability, transparency, and mobile integration have the potential to transform risk management for Kenya's smallholder farmers.
+
+        \pagebreak
 
         \section{Business Model}\label{sec:business-model}
 
@@ -384,15 +386,14 @@
             p^\ast = p_d(x^\ast), \qquad C_s(R^\ast) = C_{\mathrm{req}}(x^\ast).
         \]
 
-        \textbf{Monotonicity.} If farmer demand increases, $p^\ast$ weakly increases. If investor supply increases, $R^\ast$ weakly decreases.
+        \begin{enumerate}[]
+            \item \textbf{Monotonicity.} If farmer demand increases, $p^\ast$ weakly increases. If investor supply increases, $R^\ast$ weakly decreases.
+            \item \textbf{Existence and uniqueness.} Under standard monotonicity, the auction admits a unique clearing outcome $(x^\ast,p^\ast,R^\ast)$.
+            \item \textbf{Efficiency.} The full coverage rule maximizes feasible farmer coverage given investor constraints.
+            \item \textbf{Incentives.} Uniform-price auctions are not fully strategy-proof; large bidders may attempt demand reduction~\parencite{ausubel2002demand}. Mitigation includes sealed bids, per-farmer caps, and pro-rata rationing.
+        \end{enumerate}
 
-        \textbf{Existence and uniqueness.} Under standard monotonicity, the auction admits a unique clearing outcome $(x^\ast,p^\ast,R^\ast)$.
-
-        \textbf{Efficiency.} The full coverage rule maximizes feasible farmer coverage given investor constraints.
-
-        \textbf{Incentives.} Uniform-price auctions are not fully strategy-proof; large bidders may attempt demand reduction~\parencite{ausubel2002demand}. Mitigation includes sealed bids, per-farmer caps, and pro-rata rationing.
-
-        \subsection{Limitations and Future Research}\label{subsec:limitations-and-future-research}
+            \subsection{Limitations and Future Research}\label{subsec:limitations-and-future-research}
         Limitations remain. Functional forms for demand and supply require calibration. $\hat{\pi}$ must be validated against actuarial or climate models.
         Uniform-price auctions remain vulnerable to demand reduction and collusion.
         Commit--reveal protocols face risks of non-reveal failures.
@@ -408,8 +409,8 @@
 
 		% New: concise prototype scope table
 		\subsection{Prototype Scope: Model vs. Implementation}\label{subsec:model-vs-prototype}
-		To avoid ambiguity, this subsection summarizes the economic model versus the implemented prototype.
-		\begin{table}[htbp]
+		To avoid ambiguity, table~\ref{tab:model-vs-prototype} summarizes the economic model versus the implemented prototype.
+		\begin{table}[!h]
 		\centering
 		\caption{Economic Model vs. Prototype Implementation}
 		\label{tab:model-vs-prototype}
@@ -541,7 +542,7 @@
 
         \begin{figure}[htbp]
             \centering
-            \includegraphics[scale=0.5]{graphics/ClassDiagram_Old}
+            \includegraphics[scale=0.4]{graphics/ClassDiagram_Old}
             \caption{Initial Contract Design \\ \textit{Source: Author's own.}}
             \label{fig:initial-contract-design}
         \end{figure}
@@ -563,8 +564,6 @@
 		\item \textbf{Attack vectors:} Lastly there were some attack vectors, especially for the owner.
 		The \texttt{startNewSeason()} function could be used at any point during the season, thus rendering unclaimed policy tokens worthless and not allowing for investment withdrawals to be made.
 		\end{enumerate}
-
-        \pagebreak
 
 		Addressing these issues of the initial prototype the contract was restructured.
 		The main fixes were:
@@ -591,7 +590,9 @@
 			\end{tabular}
 		\end{table}
 
-		\subsection{Implementation: Final State of the project}\label{subsec:final-state}
+        \pagebreak
+
+		\subsection{Final State of the project}\label{subsec:final-state}
 
 		The final state of the contract can be seen in Figure~\ref{fig:final-contract-design}
 		\begin{figure}[h]
@@ -612,6 +613,8 @@
 
 		Both are required to not be zero and used to set the corresponding fields for further use.
 		Then the first season is initialized.
+
+        \bigskip
 
 		As shown in listing~\ref{lst:contract-state}, the contract utilizes a SeasonState enum to keep track of the phase that is currently active in the state machine.
 		The \texttt{getSeasonState()} method is used as the state machine and utilizes the \texttt{getCurrentTime()} method.
@@ -657,6 +660,7 @@
 		This modifier is for example used for the \texttt{startNewSeason()} function, which initializes a new season with the given premium.
 		The function should only be called once the last season has finished, to avoid policies not being claimable or investors not being able to withdraw their funds.
 
+        \bigskip
 
 		The most important functions for the farmers are \texttt{buyPolicy()} and \texttt{claimPolicies()}.
 		They allow for purchasing and filing claims while checking all necessary conditions.
@@ -712,6 +716,8 @@
 		Both functions are secured by a reentrancy guard as a security best practice, because unlike in the prototype setup, in production the stablecoin contract used is not directly controllable and there might be some malicious code or even potential flash loan attacks, where the attacker attempts to manipulate the contract state through rapid sequential interactions.
 		In both cases the tokens are minted/burned only after the transfer was successful to avoid minting/burning should the transfer fail.
 
+        \bigskip
+
 		Lastly the investment logic is simplified a lot by using the \texttt{ERC4626 token vault} standard:
 
 		\begin{lstlisting}[style=soliditystyle, caption={Excerpt: RainyDayFund.sol - Investor Functions},label={lst:contract-invest}]
@@ -745,18 +751,19 @@
 		Test coverage reaches nearly 100\% for critical functions, allowing bugs to be identified and resolved early in the development cycle.
 		The comprehensive test suite verifies correct contract behavior across a variety of scenarios, including edge cases and potential attack vectors.
 
-		\begin{figure}[!htbp]
-			\centering
-			\begin{minipage}[b]{0.48\textwidth}
-				\centering
-				\includegraphics[width=0.90\linewidth]{graphics/Passing_Tests}
-				\includegraphics[width=0.90\linewidth]{graphics/Test_Coverage}
-				\caption*{(a) Passing Tests and Coverage} \textit{Source: Author's own.}
-			\end{minipage}
-			\label{fig:test-set-up}
-		\end{figure}
+        \begin{figure}[!htbp]
+            \centering
+            \begin{minipage}[b]{0.48\textwidth}
+                \centering
+                \includegraphics[width=0.90\linewidth]{graphics/Passing_Tests}
+                \includegraphics[width=0.90\linewidth]{graphics/Test_Coverage}
+                \caption{Passing Tests and Coverage \\ \textit{Source: Author's own.}}
+                \label{fig:test-set-up}
+            \end{minipage}\label{fig:figure}
+        \end{figure}
 
-    \FloatBarrier
+
+        \FloatBarrier
 
     \subsection{Problems and Remaining Questions}\label{subsec:problems-and-remaining-questions}
 
@@ -808,6 +815,8 @@
 		The frontend requires enhanced usability, particularly for users with limited digital experience.
 		A mobile-first design is essential, as most users will access the platform via smartphones.
 		Offline functionality should also be included to accommodate rural regions with inconsistent internet connectivity.
+
+        \pagebreak
 
 		\textbf{Technical priorities include:}
 
