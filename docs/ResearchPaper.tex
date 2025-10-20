@@ -380,6 +380,23 @@
         After settlement, the protocol may deduct a fee $F$ from the total pool for operational costs.
         This deduction does not affect price formation or investor bidding; it is applied ex-post and anticipated in bids.
 
+        \subsection{Analytical Approximations and Bonding Curve}\label{subsec:bonding-curve}
+        For analysis and forecasting, seasonal outcomes $(Q,p)$ can be approximated with tractable functional forms.
+        Farmer demand is parametrized as isoelastic~\parencite{mascolell1995microeconomic,varian1992micro}:
+        \[
+            p_d(x) = A x^{-1/\varepsilon}, \quad \varepsilon > 0,
+        \]
+        while investor supply can be represented linearly:
+        \[
+            C_s(R) = a + bR, \quad b > 0.
+        \]
+        Ex post, simulated auction outcomes $(Q,p)$ may also be fitted with a convex bonding curve:
+        \[
+            p(x) = \max\!\left(p_{\min},\, p_{\min}\Big(1+\frac{\lambda x}{N}\Big)^k\right),
+        \]
+        which provides a tractable approximation for scenario analysis and forecasting~\parencite{angeris2020improved,shiller2003bond}.
+        This curve is used strictly for analytical diagnostics and stress testing, never for live pricing or clearing.
+
         \subsection{Equilibrium Properties}\label{subsec:equilibrium-properties}
         Auction outcomes satisfy
         \[
@@ -546,9 +563,6 @@
             \caption{Initial Contract Design \\ \textit{Source: Author's own.}}
             \label{fig:initial-contract-design}
         \end{figure}
-
-
-        \pagebreak
 
         Initially there were multiple issues:
 
@@ -816,8 +830,6 @@
 		A mobile-first design is essential, as most users will access the platform via smartphones.
 		Offline functionality should also be included to accommodate rural regions with inconsistent internet connectivity.
 
-        \pagebreak
-
 		\textbf{Technical priorities include:}
 
 		\begin{enumerate}
@@ -910,6 +922,8 @@
 			\item Functions to update weather data (for testing purposes)
 			\item Standard interface conformance to ensure compatibility with the main contract
 		\end{itemize}
+
+        \pagebreak
 
         \section{AI Usage Overview}\label{sec:AI-Usage}
 
