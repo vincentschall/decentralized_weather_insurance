@@ -2438,14 +2438,10 @@
     <bcf:citekey order="51" intorder="1">blum1983coinflipping</bcf:citekey>
     <bcf:citekey order="51" intorder="2">buterin2015commit</bcf:citekey>
     <bcf:citekey order="51" intorder="3">parkes2014mechanism</bcf:citekey>
-    <bcf:citekey order="52" intorder="1">bowers1997actuarial</bcf:citekey>
-    <bcf:citekey order="53" intorder="1">mascolell1995microeconomic</bcf:citekey>
-    <bcf:citekey order="53" intorder="2">varian1992micro</bcf:citekey>
-    <bcf:citekey order="54" intorder="1">angeris2020improved</bcf:citekey>
-    <bcf:citekey order="54" intorder="2">shiller2003bond</bcf:citekey>
-    <bcf:citekey order="55" intorder="1">ERC1155</bcf:citekey>
-    <bcf:citekey order="56" intorder="1">AggregatorV3Interface</bcf:citekey>
-    <bcf:citekey order="57" intorder="1">song2024advancingblockchainscalabilityintroduction</bcf:citekey>
+    <bcf:citekey order="52" intorder="1">ausubel2002demand</bcf:citekey>
+    <bcf:citekey order="53" intorder="1">ERC1155</bcf:citekey>
+    <bcf:citekey order="54" intorder="1">AggregatorV3Interface</bcf:citekey>
+    <bcf:citekey order="55" intorder="1">song2024advancingblockchainscalabilityintroduction</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">

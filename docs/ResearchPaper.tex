@@ -240,191 +240,163 @@
 		However, programs like KLIP and private-sector innovators such as ACRE Africa and Pula show that growth is possible.
 		Farmers still face major barriers, including basis risk~\parencite{Jensen2016}, limited awareness and perceived complexity~\parencite{Janzen2020}, and upfront liquidity constraints all reduce trust and limit uptake.
 		Early blockchain pilots such as Etherisc's indicate promising pathways to reduce administrative costs and improve transparency, but scaling such solutions will depend on robust data infrastructure, effective oracles, and farmer-centric design.
-		Overall, the market reflects both a large protection gap and a significant opportunity, as innovative, technology-enabled models that combine affordability, transparency, and mobile integration have the potential to transform risk management for Kenya's smallholder farmers.	
+		Overall, the market reflects both a large protection gap and a significant opportunity, as innovative, technology-enabled models that combine affordability, transparency, and mobile integration have the potential to transform risk management for Kenya's smallholder farmers.
 
-		\section{Business Model}\label{sec:business-model}
+        \section{Business Model}\label{sec:business-model}
 
-		\subsection{Overview}\label{subsec:overview}
-		The Rainy Day Fund is a two-sided parametric insurance marketplace.
-		Farmers obtain seasonal drought protection through ERC-20 policy tokens, while investors provide liquidity to an ERC-4626 vault and receive proportional shares.
-		A smart contract manages issuance, pooling and payouts.
-		The design reduces administrative overhead and shifts pricing and risk allocation to a market-based mechanism.
+        \subsection{Overview}\label{subsec:overview}
+        The Rainy Day Fund is a two-sided parametric insurance marketplace.
+        Farmers obtain seasonal drought protection through ERC-20 policy tokens, while investors provide liquidity to an ERC-4626 vault and receive proportional shares.
+        A smart contract manages issuance, pooling and payouts.
+        The design reduces administrative overhead and shifts pricing and risk allocation to a fully market-based mechanism.
 
-		\subsection{Problem and Customer Segments}\label{subsec:problem-and-customer-segments}
-		Smallholder farmers in Kenya face recurrent rainfall shocks but lack access to formal insurance.
-		High distribution costs, weak trust in insurers and limited actuarial data block traditional coverage.
-		At the same time, impact-oriented investors seek transparent, uncorrelated instruments.
-		The marketplace connects both groups, while cooperatives, NGOs and telcos provide distribution and trust infrastructure ~\parencite{cole2013barriers}.
+        \subsection{Problem and Customer Segments}\label{subsec:problem-and-customer-segments}
+        Smallholder farmers in Kenya face recurrent rainfall shocks but lack access to formal insurance.
+        High distribution costs, weak trust in insurers and limited actuarial data prevent traditional coverage.
+        At the same time, impact-oriented investors seek transparent, uncorrelated instruments.
+        The marketplace connects both groups, while cooperatives, NGOs and telcos provide distribution and trust infrastructure~\parencite{cole2013barriers}.
 
-		\subsection{Value Propositions}\label{subsec:value-propositions}
-		\begin{itemize}
-			\item \textbf{Farmers}: affordable coverage, predictable payouts triggered by rainfall indices, and mobile transactions via M-Pesa.
-			\item \textbf{Investors}: standardized exposure to agricultural risk with measurable yield, diversifying traditional portfolios.
-			\item \textbf{Partners}: reduced leakage and transparent performance metrics for evaluation and reporting.
-		\end{itemize}
+        \subsection{Value Propositions}\label{subsec:value-propositions}
+        \begin{itemize}
+            \item \textbf{Farmers}: affordable coverage, predictable payouts triggered by rainfall indices, and mobile transactions via M-Pesa.
+            \item \textbf{Investors}: standardized exposure to agricultural risk with measurable yield, diversifying traditional portfolios.
+            \item \textbf{Partners}: reduced leakage and transparent performance metrics for evaluation and reporting.
+        \end{itemize}
 
-		\subsection{Solution Design}\label{subsec:solution-design}
-		Farmers purchase ERC-20 tokens as digital proof of coverage.
-		Investors deposit capital into an ERC-4626 vault and receive fungible shares.
-		Oracle-based rainfall indices determine payout eligibility.
-		Premiums and yields are modeled via a seasonal sealed-bid uniform-price auction functioning as a prediction market: farmer bids and investor offers jointly reveal the market-implied drought probability $\hat{\pi}$ and equilibrium margin~\parencite{hanson2003market,wolfers2004prediction}. In the current prototype, the premium is set by the contract owner at season start (no on-chain auction).
-		The frontend abstracts blockchain logic and is designed for future fiat--stablecoin conversion integration.
+        \subsection{Solution Design}\label{subsec:solution-design}
+        Farmers purchase ERC-20 tokens as digital proof of coverage.
+        Investors deposit capital into an ERC-4626 vault and receive fungible shares.
+        Oracle-based rainfall indices determine payout eligibility.
+        Premiums and yields are discovered through a pre-season sealed-bid uniform-price auction functioning as a prediction market: farmer bids and investor offers jointly reveal the market-implied drought probability $\hat{\pi}$ and equilibrium margin~\parencite{hanson2003market,wolfers2004prediction}.
+        In the current prototype, the premium is owner-set at season start (no on-chain auction).
+        The frontend abstracts blockchain logic and is designed for fiat--stablecoin integration.
 
-		\subsection{Revenue Model}\label{subsec:revenue-model}
-		Premiums collected from farmers fund the risk pool.
-		Investor returns correspond to the surplus of premiums over payouts, distributed proportionally through vault shares.
-		The auction internalizes both risk expectations and operational costs into the equilibrium premium, creating endogenous funding for the platform.
+        \subsection{Revenue Model}\label{subsec:revenue-model}
+        Premiums collected from farmers fund the risk pool.
+        Investor returns correspond to the surplus of premiums over payouts, distributed proportionally through vault shares.
+        Operational costs are deducted transparently by the protocol \emph{after} settlement.
+        Because investors anticipate this deduction when bidding, premiums remain entirely market-determined.
+        This ensures that the auction mechanism itself is unaffected by fees, while the platform sustains infrastructure, audits, and compliance.
 
-		The operator may also allocate its own capital into the pool.
-		This dual role enhances credibility and creates an additional revenue stream if claims remain below expectations, though it increases exposure to volatility.
-		A 2--5\% operator fee on premiums covers infrastructure, audits, and compliance.
-		Optional reinsurance transfers catastrophic risk to external providers and stabilizes investor yields ~\parencite{cummins2009catastrophe}.
+        The operator may also allocate its own capital into the pool.
+        This dual role enhances credibility and creates an additional revenue stream if claims remain below expectations, though it increases exposure to volatility.
+        Optional reinsurance transfers catastrophic tail risk to external providers and stabilizes investor yields~\parencite{cummins2009catastrophe}.
 
-		ERC-4626 shares accumulate value as premiums flow in and payouts are deducted.
-		Because surpluses are automatically reinvested into vault NAV, long-term investors experience a compounding effect similar to conventional finance.
-		Payouts are not broadcasted indiscriminately; they require a minimal on-chain claim, after which the contract settles automatically if the rainfall index threshold is breached (see Claim Process and Payout Logic).
+        ERC-4626 shares accumulate value as premiums flow in and payouts are deducted.
+        Surpluses are automatically reinvested into vault NAV, producing a compounding effect similar to conventional finance.
+        Payouts require a minimal on-chain claim, after which the contract settles automatically if the rainfall threshold is breached (see Claim Process and Payout Logic).
 
-		\subsection{Cost Structure}\label{subsec:cost-structure}
-		Key cost drivers are oracle services, secure data feeds, system audits, regulatory engagement, payment integration, and farmer outreach.
-		Automation keeps administrative costs lower than in conventional microinsurance.
-		Economies of scale further reduce marginal costs as the pool and user base expand.
+        \subsection{Cost Structure}\label{subsec:cost-structure}
+        Key cost drivers are oracle services, secure data feeds, contract audits, regulatory engagement, payment integration, and farmer outreach.
+        Automation keeps administrative costs substantially lower than in conventional microinsurance.
+        As scale increases, marginal costs decline, generating economies of scale.
 
-		\subsection{Channels and Partnerships}\label{subsec:channels-and-partnerships}
-		Cooperatives, NGOs, and agro-dealers provide farmer onboarding and trust.
-		M-Pesa integration allows direct premium and payout transactions.
-		Oracle providers deliver rainfall indices ~\parencite{egberts2017oracle}.
-		Reinsurers supply capacity for tail risk.
-		Regulators and development agencies support compliance and market acceptance.
+        \subsection{Channels and Partnerships}\label{subsec:channels-and-partnerships}
+        Cooperatives, NGOs, and agro-dealers provide farmer onboarding and trust.
+        M-Pesa integration enables direct premium and payout transactions.
+        Oracle providers deliver rainfall indices~\parencite{egberts2017oracle}.
+        Reinsurers supply capacity for catastrophic events.
+        Regulators and development agencies support compliance and legitimacy.
 
-		\subsection{Scalability}\label{subsec:scalability}
-		The model can expand from Kenyan maize to other crops, regions, and perils such as livestock mortality or flood.
-		ERC standards allow interoperability with DeFi protocols and secondary markets for risk exposure.
-		The prediction-market mechanism improves with scale, as more participants and data sources sharpen price discovery.
-		Modular system design supports adjustments across regulatory environments.
+        \subsection{Scalability}\label{subsec:scalability}
+        The model can expand from Kenyan maize to other crops, regions, and perils such as livestock mortality or flood.
+        ERC standards allow interoperability with DeFi protocols and secondary markets for risk exposure.
+        The auction mechanism improves with scale, as more participants sharpen price discovery.
+        Modular system design supports adaptation across regulatory environments.
 
-		\subsection{Claim Process and Payout Logic}\label{subsec:claim-process-and-payout-logic}
-		Farmers must file a minimal on-chain claim (notice-of-loss) during a specified window $[t_0,t_1]$ after oracle publication.
-		The contract verifies:
-		\begin{enumerate}
-			\item ownership: policy tokens $q>0$ for the epoch,
-			\item uniqueness: no prior claim from the same address/epoch,
-			\item eligibility: oracle index $I$ satisfies $I \le \tau$.
-		\end{enumerate}
-		If (1)--(3) hold, the contract transfers $qL$ to the claimant’s wallet, otherwise the call reverts. In the analytical model, pro-rata rationing and operator fees can be applied; these are not enforced in the current prototype.
-		No off-chain adjusters or discretionary assessments occur.\footnote{A claim call is required to (i) prevent automatic transfers to inactive or lost wallets, (ii) avoid dust payouts below gas costs, and (iii) let farmers select their preferred payout rail (e.g. M-Pesa bridge).}
+        \subsection{Claim Process and Payout Logic}\label{subsec:claim-process-and-payout-logic}
+        Farmers must file a minimal on-chain claim (notice-of-loss) during a specified window $[t_0,t_1]$ after oracle publication.
+        The contract verifies:
+        \begin{enumerate}
+            \item ownership: policy tokens $q>0$ for the epoch,
+            \item uniqueness: no prior claim from the same address/epoch,
+            \item eligibility: oracle index $I$ satisfies $I \le \tau$.
+        \end{enumerate}
+        If (1)--(3) hold, the contract transfers $qL$ to the claimant’s wallet; otherwise the call reverts.
+        In the analytical model, pro-rata rationing applies; in the prototype, claims are settled directly without deductions.
+        No off-chain adjusters or discretionary assessments occur.\footnote{A claim call is required to (i) prevent automatic transfers to inactive wallets, (ii) avoid dust payouts below gas costs, and (iii) let farmers select their preferred payout rail (e.g. M-Pesa bridge).}
 
-		\section{Mechanism Design}\label{sec:mechanism-design}
+        \section{Mechanism Design}\label{sec:mechanism-design}
 
-		\noindent\textit{Scope note: The following mechanism specifies the market design used in our economic model. The prototype does not implement on-chain bidding (commit--reveal) or automated auction clearing; seasonal premiums are owner-set in the current implementation.}
+        \noindent\textit{Scope note: The following mechanism specifies the market design used in our economic model. The prototype does not implement on-chain bidding (commit--reveal) or automated auction clearing; seasonal premiums are owner-set in the current implementation.}
 
-		Premiums and investor yields are discovered through a pre-season sealed-bid uniform-price auction.
-		This single mechanism acts as a prediction market for drought risk, while remaining implementable under smallholder constraints ~\parencite{wilson1979auctions,ausubel2002demand}.
+        Premiums and investor yields are discovered through a sealed-bid uniform-price auction.
+        This mechanism functions as a prediction market for drought risk while remaining implementable under smallholder constraints~\parencite{wilson1979auctions,ausubel2002demand}.
 
-		\subsection{Notation}\label{subsec:notation}
+        \subsection{Notation}\label{subsec:notation}
+        Let $x$ denote the number of insurance tokens sold, with $Q$ referring to the total seasonal quantity ($Q=x$ at equilibrium).
+        Each token promises a payout $L$ if drought occurs, represented by $X \in \{0,1\}$.
+        Farmers pay a premium $p$ per token.
 
-		Let $x$ denote the number of insurance tokens sold, with $Q$ referring to the total seasonal quantity (so $Q=x$ at equilibrium).
-		Each token promises a payout $L$ if drought occurs, represented by the indicator variable $X \in \{0,1\}$.
-		Farmers pay a premium $p$ per token.
+        We define $\hat{\pi}$ as the \emph{market-implied probability of drought}, inferred endogenously from the auction clearing.
+        Premiums decompose into $\hat{\pi}L$ and the risk margin $\mu$.
+        Investor capital is $K$, realized return $R$, and expected return $R^\star$.
+        Farmer inverse demand is $p_d(x)$; investor supply is $C_s(R)$.
+        Required reserves are $C_{\mathrm{req}}(x)$ with prudential factor $\theta \in (0,1]$.
 
-		We define $\hat{\pi}$ as the \emph{market-implied probability of drought}, inferred endogenously from the auction clearing.
-		Premiums decompose into $\hat{\pi}L$ and the risk margin $\mu$.
-		Operational costs are $F$, investor capital $K$, realized return $R$, and expected return $R^\star$.
-		Farmer inverse demand is $p_d(x)$; investor supply is $C_s(R)$.
-		Required reserves are $C_{\mathrm{req}}(x)$, with prudential utilization factor $\theta \in (0,1]$.
+        \subsection{Auction Process and Clearing Mechanism}\label{subsec:auction-process-and-clearing-mechanism}
+        Farmers submit bids $(q_i, p_i)$; investors submit $(k_j, R_j)$.
+        Bids are committed via a commit--reveal protocol~\parencite{blum1983coinflipping,buterin2015commit,parkes2014mechanism}, ensuring confidentiality until revelation.
 
-		\subsection{Auction Process and Clearing Mechanism}\label{subsec:auction-process-and-clearing-mechanism}
+        Feasibility requires
+        \[
+            C_{\mathrm{req}}(x) = xL\theta \leq S(R), \quad x \leq D(p).
+        \]
 
-		At the beginning of each season, farmers submit bids $(q_i, p_i)$ and investors submit $(k_j, R_j)$.
-		Bids are committed via a commit--reveal protocol ~\parencite{blum1983coinflipping,buterin2015commit,parkes2014mechanism}, ensuring confidentiality until revelation.
+        Investor cashflow is
+        \[
+            CF = pQ - XQL,
+        \]
+        with realized return
+        \[
+            R = \frac{CF}{K}, \quad
+            R^\star = \frac{pQ - \hat{\pi}QL}{K}.
+        \]
 
-		Feasibility requires
-		\[
-			C_{\mathrm{req}}(x) = xL\theta \leq S(R), \quad x \leq D(p).
-		\]
-		Expected return for coverage $x$ at premium $p$ is
-		\[
-			R = \frac{px - \hat{\pi}xL - F}{K}.
-		\]
+        The clearing premium is
+        \[
+            p^\ast = \min\{p_i : \sum_i q_i \geq x^\ast\},
+        \]
+        and equilibrium return $R^\ast$ follows from the cashflow identity.
+        All accepted farmers pay $p^\ast$, all accepted investors receive $R^\ast$.
+        If demand exceeds feasible coverage, allocations are scaled proportionally:
+        \[
+            q_i^{\text{alloc}} = \rho q_i, \qquad \rho = \frac{x^\ast}{\sum_i q_i}.
+        \]
 
-		The mechanism adopts the \emph{full coverage rule}: clearing at the maximal feasible $x^\ast$.
-		The clearing premium is
-		\[
-			p^\ast = \min\{p_i : \sum_i q_i \geq x^\ast\},
-		\]
-		and the corresponding expected return $R^\ast$ follows from the cashflow identity.
-		All accepted farmer bids pay $p^\ast$, all investor capital earns $R^\ast$.
-		If demand exceeds feasible coverage, allocations are scaled proportionally:
-		\[
-			q_i^{\text{alloc}} = \rho q_i, \qquad \rho = \frac{x^\ast}{\sum_i q_i}.
-		\]
+        \subsection{Premium Decomposition and the Risk Margin}\label{subsec:premium-decomposition}
+        The clearing premium decomposes ex post into
+        \[
+            p^\ast = \hat{\pi}L + \mu,
+        \]
+        where $\mu$ is the margin implied by bids.
+        It follows that
+        \[
+            \mu = \frac{R^\star K}{Q}.
+        \]
 
-		\subsection{Premium Decomposition and the Risk Margin}\label{subsec:premium-decomposition-and-the-risk-margin}
+        After settlement, the protocol may deduct a fee $F$ from the total pool for operational costs.
+        This deduction does not affect price formation or investor bidding; it is applied ex-post and anticipated in bids.
 
-		The clearing premium decomposes into expected actuarial loss and a margin:
-		\[
-			p = \hat{\pi}L + \mu.
-		\]
+        \subsection{Equilibrium Properties}\label{subsec:equilibrium-properties}
+        Auction outcomes satisfy
+        \[
+            p^\ast = p_d(x^\ast), \qquad C_s(R^\ast) = C_{\mathrm{req}}(x^\ast).
+        \]
 
-		Investor cashflow is
-		\[
-			CF = pQ - XQL - F,
-		\]
-		with realized return
-		\[
-			R = \frac{CF}{K}, \quad
-			R^\star = \frac{pQ - \hat{\pi}QL - F}{K}.
-		\]
+        \textbf{Monotonicity.} If farmer demand increases, $p^\ast$ weakly increases. If investor supply increases, $R^\ast$ weakly decreases.
 
-		It follows that
-		\[
-			\mu = \frac{R^\star K + F}{Q}.
-		\]
+        \textbf{Existence and uniqueness.} Under standard monotonicity, the auction admits a unique clearing outcome $(x^\ast,p^\ast,R^\ast)$.
 
-		Operational costs $F$ are deducted transparently by the contract before distribution.
-		They reduce net cashflows, but investors anticipate them when bidding~\parencite{bowers1997actuarial}.
+        \textbf{Efficiency.} The full coverage rule maximizes feasible farmer coverage given investor constraints.
 
-		\subsection{Joint Market Equilibrium}\label{subsec:joint-market-equilibrium}
+        \textbf{Incentives.} Uniform-price auctions are not fully strategy-proof; large bidders may attempt demand reduction~\parencite{ausubel2002demand}. Mitigation includes sealed bids, per-farmer caps, and pro-rata rationing.
 
-		Auction outcomes satisfy equilibrium conditions:
-		\[
-			p^\ast = p_d(x^\ast), \qquad C_s(R^\ast) = C_{\mathrm{req}}(x^\ast).
-		\]
-
-		For analysis, demand is approximated by an isoelastic form~\parencite{mascolell1995microeconomic,varian1992micro}:
-		\[
-			p_d(x) = A x^{-1/\varepsilon}, \quad \varepsilon > 0,
-		\]
-		and supply linearly:
-		\[
-			C_s(R) = a + bR, \quad b > 0.
-		\]
-
-		Seasonal outcomes $(Q,p)$ are then fitted ex post with a convex bonding curve:
-		\[
-			p(x) = \max\left(p_{\min},\, p_{\min}\left(1+\frac{\lambda x}{N}\right)^k\right)
-		\]
-		providing a tractable approximation for forecasting~\parencite{angeris2020improved,shiller2003bond}.
-		This curve is used \emph{only for analysis}, not for live pricing.
-
-		\subsection{Allocation Rules and Fairness}\label{subsec:allocation-rules-and-fairness}
-
-		Pro-rata rationing ensures envy-freeness when demand exceeds feasible capacity:
-		\[
-			q_i^{\text{alloc}} = \rho q_i, \qquad \rho = \frac{\bar{Q}}{\sum q_i}.
-		\]
-
-		Alternative rules (cutoffs, discriminatory allocations, priority mechanisms) were rejected as less efficient or less fair.
-		Full coverage with pro-rata allocation mobilizes all feasible capacity while minimizing envy.
-
-		\subsection{Limitations and Future Research}\label{subsec:limitations-and-future-research}
-
-		Limitations remain.
-		Functional forms for demand, supply and bonding curves require calibration. $\hat{\pi}$ must be validated against external actuarial or climate models.
-		Uniform-price auctions remain vulnerable to demand reduction.
-		Commit--reveal protocols face risks of collusion or non-reveal failures.
-		Finally, convex pricing could disadvantage liquidity-constrained farmers.
-		Future research should calibrate with field data, add anti-collusion safeguards and test continuous models as counterfactuals.
-
+        \subsection{Limitations and Future Research}\label{subsec:limitations-and-future-research}
+        Limitations remain. Functional forms for demand and supply require calibration. $\hat{\pi}$ must be validated against actuarial or climate models.
+        Uniform-price auctions remain vulnerable to demand reduction and collusion.
+        Commit--reveal protocols face risks of non-reveal failures.
+        Future work should calibrate with field data, add anti-collusion safeguards, and test dynamic or continuous models as counterfactuals.
 
 		\section{Implementation}\label{sec:implementation}
 		Overview of implementation goals, strategy and architecture.
@@ -764,13 +736,13 @@
 		Some information about the \texttt{SeasonPolicyToken}, \texttt{MockUSDC} and \texttt{MockWeatherOracle} contracts can be found in the appendix~\ref{sec:contract-analysis}.
 
 		\subsection{Quality Assurance \& Security}\label{subsec:qa-security}
-		Quality assurance focused on comprehensive testing and systematic validation of contract functionality. 
-		All tests were written in TypeScript using the Node.js framework with Chai for assertions, enabling early error detection and improving maintainability. 
-		To ensure complete testing without reliance on external dependencies, a mock ERC20 token, \texttt{MockUSDC}, was implemented to emulate USDC behavior. 
-		This approach enabled full control over the testing environment and facilitated the verification of payment and funding logic within isolated virtual machine conditions. 
+		Quality assurance focused on comprehensive testing and systematic validation of contract functionality.
+		All tests were written in TypeScript using the Node.js framework with Chai for assertions, enabling early error detection and improving maintainability.
+		To ensure complete testing without reliance on external dependencies, a mock ERC20 token, \texttt{MockUSDC}, was implemented to emulate USDC behavior.
+		This approach enabled full control over the testing environment and facilitated the verification of payment and funding logic within isolated virtual machine conditions.
 
-		The test setup, shown in Figure~\ref{fig:test-set-up}, emphasizes the importance of robust testing and code coverage in the project. 
-		Test coverage reaches nearly 100\% for critical functions, allowing bugs to be identified and resolved early in the development cycle. 
+		The test setup, shown in Figure~\ref{fig:test-set-up}, emphasizes the importance of robust testing and code coverage in the project.
+		Test coverage reaches nearly 100\% for critical functions, allowing bugs to be identified and resolved early in the development cycle.
 		The comprehensive test suite verifies correct contract behavior across a variety of scenarios, including edge cases and potential attack vectors.
 
 		\begin{figure}[!htbp]
@@ -821,21 +793,21 @@
 
 		\subsection{Future Work}\label{subsec:future-work}
 		The most important next step is the integration of real Chainlink oracles for weather data.
-		The current implementation uses mock data, but production requires reliable, tamper-proof weather information from multiple sources. 
-		Deployment on a real network is also necessary. 
+		The current implementation uses mock data, but production requires reliable, tamper-proof weather information from multiple sources.
+		Deployment on a real network is also necessary.
 		Layer 2\footnotemark{}\footnotetext{Refer to: \parencite{song2024advancingblockchainscalabilityintroduction}} solutions such as Polygon or Arbitrum~\footnotemark{} are suitable due to significantly lower gas costs, which is essential for price-sensitive users such as farmers.\footnotetext{https://blog.arbitrum.io/a-guide-to-understanding-blockchain-layer-2s/}
-		Cross-chain deployment should also be explored to provide users with additional flexibility. 
+		Cross-chain deployment should also be explored to provide users with additional flexibility.
 
-		The smart contract architecture requires further refinement for production readiness. 
-		Upgradeability mechanisms must be introduced to enable future bug fixes and feature additions while maintaining a balance with immutability to preserve user trust. 
-		Gas optimization remains a key priority, as the current version functions correctly but is not cost-efficient. 
+		The smart contract architecture requires further refinement for production readiness.
+		Upgradeability mechanisms must be introduced to enable future bug fixes and feature additions while maintaining a balance with immutability to preserve user trust.
+		Gas optimization remains a key priority, as the current version functions correctly but is not cost-efficient.
 
-		Future functionality may include crop-specific insurance products and multi-season coverage, addressing the limitations of the current single-season model. 
-		Additional features such as group policies for farmer cooperatives would further increase system usability. 
+		Future functionality may include crop-specific insurance products and multi-season coverage, addressing the limitations of the current single-season model.
+		Additional features such as group policies for farmer cooperatives would further increase system usability.
 
-		The frontend requires enhanced usability, particularly for users with limited digital experience. 
-		A mobile-first design is essential, as most users will access the platform via smartphones. 
-		Offline functionality should also be included to accommodate rural regions with inconsistent internet connectivity. 
+		The frontend requires enhanced usability, particularly for users with limited digital experience.
+		A mobile-first design is essential, as most users will access the platform via smartphones.
+		Offline functionality should also be included to accommodate rural regions with inconsistent internet connectivity.
 
 		\textbf{Technical priorities include:}
 
@@ -847,7 +819,7 @@
 			\item Multi-language support and simplified user interfaces
 		\end{enumerate}
 
-		More extensive testing on public testnets is planned once deployment issues are resolved. 
+		More extensive testing on public testnets is planned once deployment issues are resolved.
 		While the current local testing setup provides an effective development environment, testing under real network conditions is essential to uncover issues that may not appear in isolated simulations.
 
 		\section{Conclusion}\label{sec:conclusion}
