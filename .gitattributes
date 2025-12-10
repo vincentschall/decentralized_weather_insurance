@@ -1,4 +1,1 @@
-*.ts linguist-vendored
-*.js linguist-vendored
-*.tsx linguist-vendored
-*.jsx linguist-vendored
+** linguist-language=Solidity
