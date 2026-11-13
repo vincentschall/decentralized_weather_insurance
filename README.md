@@ -9,6 +9,8 @@
 
 Group project (09/2025): EVM-based smart contract with react app for the blockchain challenge @University of Basel.
 
+![Client screenshot](docs/graphics/client_screenshot.png)
+
 ## Needed installations (not covered here)
 
 - hardhat, node.js
@@ -28,10 +30,8 @@ If this is your first run, go into /client and run `npm install`. Then do the sa
 
 **In both cases,** go to the project root and run `node cleanup.js` to remove old files after running the program. Optionally, run `npx hardhat clean` in the contract folder to be extra sure.
 
-## Important sidenote
+## Known limitation
 
-Due to the implementation of the ERC4626 standard, buying a policy first (when the amount of currency in the riskpool is still 0),
-will result in a critical break of the program. To use the frontend as intended, start by investing into 
-the riskpool. Check the research paper for a more detailed breakdown.
+The risk pool is an ERC-4626 vault whose `totalAssets()` is the contract's USDC balance. If policies are sold before anyone has invested, the premiums land in a vault with zero shares, which distorts the share price for the first investor and leaves payouts uncovered. In the demo, invest into the risk pool before buying policies. A production version would require a minimum pool size (or virtual shares) before policy sales open; see the research paper for details.
 
 https://github.com/user-attachments/assets/f12aa07f-a861-4744-ab3f-5aa6d95f8485
